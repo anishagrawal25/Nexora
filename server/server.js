@@ -4,6 +4,9 @@ const dotenv = require("dotenv");
 
 dotenv.config();
 
+const { connectPostgres } = require("./config/postgres");
+const { connectMongo } = require("./config/mongo");
+
 const app = express();
 
 app.use(cors());
@@ -15,6 +18,21 @@ app.get("/api/health", (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+async function start() {
+  const postgresReady = await connectPostgres();
+  const mongoReady = await connectMongo();
+
+  if (!postgresReady) {
+    console.warn("Postgres unavailable; continuing without it.");
+  }
+
+  if (!mongoReady) {
+    console.warn("MongoDB unavailable; continuing without it.");
+  }
+
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+}
+
+start();
