@@ -17,7 +17,7 @@ async function connectPostgres() {
     console.log("Postgres connected");
     return true;
   } catch (err) {
-    console.error("Postgres connection failed:", err.message);
+    console.error("Postgres connection failed. Code:", err.code, "Message:", err.message, "Full:", err);
     return false;
   }
 }

@@ -7,6 +7,7 @@ dotenv.config();
 const { connectPostgres } = require("./config/postgres");
 const { connectMongo } = require("./config/mongo");
 const authRoutes = require("./routes/authRoutes");
+const profileRoutes = require("./routes/profileRoutes");
 const { errorHandler } = require("./middleware/errorHandler");
 
 const app = express();
@@ -14,6 +15,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use("/api/auth", authRoutes);
+app.use("/api/profile", profileRoutes);
 
 app.get("/api/health", (req, res) => {
   res.status(200).json({ status: "ok" });
