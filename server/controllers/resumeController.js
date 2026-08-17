@@ -21,14 +21,54 @@ const analyzeResume = asyncHandler(async (req, res) => {
   const arrayBuffer = await response.arrayBuffer();
   const pdfBuffer = Buffer.from(arrayBuffer);
 
-  // Extract plain text from the PDF using the pdf-parse v2 API
+  // Extract plain text from the PDF
   const parser = new PDFParse({ data: pdfBuffer });
   const result = await parser.getText();
   const resumeText = result.text;
 
+  // Build the prompt
+  const prompt = `You are a career advisor analyzing a resume for a student preparing for internships or entry-level jobs.
+
+Analyze the following resume text and respond with ONLY a valid JSON object, no other text, matching this exact structure:
+
+{
+  "skills": ["array of technical and soft skills found in the resume"],
+  "strengths": ["array of 2-4 specific strengths, referencing actual resume content"],
+  "weaknesses": ["array of 2-4 specific weaknesses or gaps"],
+  "suggestions": ["array of 2-4 specific, actionable improvement suggestions"],
+  "readinessScore": <a number from 0 to 100 representing overall resume quality and completeness>
+}
+
+Resume text:
+"""
+${resumeText}
+"""`;
+
+  // Call Gemini
+  const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+  const aiResult = await model.generateContent(prompt);
+  const responseText = aiResult.response.text();
+
+  // Parse the JSON response
+  let analysisData;
+  try {
+    const cleanedText = responseText.replace(/```json|```/g, "").trim();
+    analysisData = JSON.parse(cleanedText);
+  } catch (err) {
+    throw new AppError("AI returned an invalid response format", 502);
+  }
+
+  // Save the analysis to the existing Mongo document
+  resumeDoc.extractedSkills = analysisData.skills;
+  resumeDoc.strengths = analysisData.strengths;
+  resumeDoc.weaknesses = analysisData.weaknesses;
+  resumeDoc.suggestions = analysisData.suggestions;
+  resumeDoc.readinessScore = analysisData.readinessScore;
+  await resumeDoc.save();
+
   res.status(200).json({
-    message: "Text extracted successfully",
-    textPreview: resumeText.slice(0, 300),
+    message: "Resume analyzed successfully",
+    analysis: resumeDoc,
   });
 });
 
