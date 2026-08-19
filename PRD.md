@@ -1,743 +1,204 @@
 # Nexora
-
 **Product Requirements Document (PRD)**
 
 ---
 
-# Table of Contents
-
+## Table of Contents
 1. Executive Summary
 2. Product Vision
 3. Problem Statement
-4. Target Audience
-5. User Personas
-6. Goals
-7. Non-Goals
-8. Market Gap
-9. Product Scope
-10. User Journey
-11. Functional Requirements
-12. Feature Specifications
-13. User Stories
-14. Acceptance Criteria
-15. Non-Functional Requirements
-16. Success Metrics
-17. Risks
-18. Future Roadmap
-19. Assumptions
-20. Open Questions
+4. Target Audience & Personas
+5. Goals
+6. Non-Goals
+7. Product Scope
+8. End-to-End User Journey
+9. Functional Requirements
+10. User Stories
+11. Acceptance Criteria
+12. Non-Functional Requirements
+13. Success Metrics
+14. Risks & Mitigations
+15. Delivery Roadmap
+16. Assumptions
+17. Open Questions
 
 ---
 
-# 1. Executive Summary
+## 1. Executive Summary
+Nexora is an AI-powered career readiness platform that helps college students and recent graduates evaluate how prepared they are for internships and placements. Instead of visiting separate tools for resume review, skill analysis, company eligibility checks, and career planning, students get all of these insights through one personalized dashboard.
 
-The Career Readiness Platform is an AI-powered web application designed to help college students evaluate how prepared they are for internships and placements.
+Nexora does not attempt to become another learning platform. It acts as a decision-support system that tells a student what to improve next — not how to learn it.
 
-Instead of visiting multiple websites for resume reviews, skill analysis, company eligibility checks, and career planning, students receive all these insights through one personalized dashboard.
-
-The platform does not attempt to become another learning platform. Instead, it acts as a decision-support system that tells students what to improve next.
-
----
-
-# 2. Product Vision
-
+## 2. Product Vision
 Create a single platform where every student can confidently answer:
 
 > "Am I ready for internships or placements, and what should I improve next?"
 
-The product focuses on guidance rather than teaching.
+## 3. Problem Statement
 
----
+### Current Landscape
+Students preparing for internships and placements typically stitch together:
+- LinkedIn (networking)
+- Generic resume checkers (resume feedback only)
+- ChatGPT (no persistent profile or structured tracking)
+- Coursera/Udemy (teaches content but doesn't prioritize what to learn)
+- Job portals (show openings, not personal readiness)
+- Personal spreadsheets (manual, unstructured tracking)
 
-# 3. Problem Statement
-
-Students preparing for placements face several challenges.
-
-## Current Problems
-
-Students typically use:
-
-- LinkedIn
-- Resume checkers
-- ChatGPT
-- Coursera
-- Job portals
-- Personal spreadsheets
-
-This creates several issues:
-
-- Information is scattered.
-- Students don't know which skill matters most.
-- Resume feedback is inconsistent.
-- Company eligibility is checked manually.
-- Progress tracking becomes difficult.
-
-## Why Existing Solutions Are Incomplete
-
+### Why This Is Incomplete
 | Existing Tool | Limitation |
-|--------------|------------|
-| LinkedIn | Networking only |
-| ChatGPT | No persistent profile |
-| Resume Checkers | Only resume feedback |
-| Coursera | Teaches content but doesn't prioritize |
-| Job Portals | Show jobs but not readiness |
+|---|---|
+| LinkedIn | Networking only, no readiness insight |
+| ChatGPT | No persistent profile, no structured output |
+| Resume checkers | Resume feedback in isolation, no skill-gap or eligibility context |
+| Learning platforms | Teach content but don't tell you *what* to prioritize |
+| Job portals | List openings but don't assess personal fit |
 
-The Career Readiness Platform connects all these steps into one workflow.
+Nexora connects resume analysis, skill gap identification, and eligibility checking into one continuous workflow, rather than solving one isolated piece.
 
----
+## 4. Target Audience & Personas
 
-# 4. Target Audience
+**Primary users:** undergraduate students (all years), final-year placement candidates, recent graduates seeking entry-level roles.
 
-## Primary Users
+**Persona 1 — Aarav, First-Year Student**
+Goal: build the right skills early for future internships.
+Pain point: doesn't know where to start or which skills matter most.
+How Nexora helps: resume analysis surfaces skill gaps early; suggestions are prioritized, not just listed.
 
-- First-year students
-- Second-year students
-- Internship seekers
-- Placement aspirants
-- Fresh graduates
+**Persona 2 — Priya, Third-Year Placement Candidate**
+Goal: crack campus placements.
+Pain point: doesn't know if she's eligible for specific companies, or how strong her resume actually is.
+How Nexora helps: AI resume analysis with a readiness score; company eligibility checking.
 
-## Secondary Users
+**Persona 3 — Final-Year Graduate**
+Goal: apply to entry-level roles with confidence.
+Pain point: uncertain whether their resume communicates their skills effectively.
+How Nexora helps: specific, content-grounded AI feedback (not generic advice) and a trackable readiness score.
 
-- College mentors
-- Placement coordinators
-- Career counselors
+## 5. Goals
 
----
+**Business goals:** demonstrate a complete, coherent career-readiness workflow; show depth across full-stack engineering, two database paradigms, and real AI integration.
 
-# 5. User Personas
+**User goals:** upload a resume and get AI feedback; see missing skills against a target role; check eligibility against real companies; track improvement over time.
 
-## Persona 1 – First-Year Student
+## 6. Non-Goals
+Nexora explicitly does **not** include:
+- Hosting video courses or coding challenges
+- Live interview scheduling
+- A job application/tracking system
+- Social networking or chat features between users
+- Guarantees of interview or hiring outcomes
+- Claims of proprietary/authoritative knowledge of any company's actual hiring bar — eligibility checks use platform-seeded, illustrative criteria, presented as indicative only
 
-Name: Aarav
+## 7. Product Scope
 
-Goal:
+**In scope:** authentication, student profile, resume upload, AI resume analysis, career readiness score, skill gap analysis, learning recommendations, company eligibility checker, unified dashboard.
 
-- Build skills for future internships.
+**Out of scope:** course hosting, recruiter-facing portal, payments, push notifications, interview scheduling.
 
-Pain Points:
+## 8. End-to-End User Journey
+Register → Log in → Complete profile → Upload resume → AI analyzes resume → Skill gap calculated against target role → Career readiness score displayed → Learning recommendations shown → Student checks company eligibility → Dashboard aggregates everything
 
-- Doesn't know where to start.
-- Unsure which skills matter.
+## 9. Functional Requirements
 
-How CRP Helps:
+### 9.1 Authentication
+**Register:** user submits name, email, password. System validates input, rejects duplicate emails, hashes the password (bcrypt), stores the account, issues a JWT.
+**Login:** user submits email, password. System verifies credentials against the stored hash, issues a JWT on success, returns a generic "invalid email or password" error on failure (prevents user enumeration).
 
-- Suggests learning priorities.
-- Shows missing skills.
+### 9.2 Student Profile
+User can view and edit: name, email (read-only after registration), CGPA, graduation year, GitHub/LinkedIn/portfolio links, target role.
 
----
+### 9.3 Resume Upload
+PDF only, 5MB maximum, uploaded to Cloudinary (not stored on the app server), with the resulting URL persisted against the user's resume analysis record.
 
-## Persona 2 – Third-Year Placement Student
-
-Name: Priya
-
-Goal:
-
-- Crack placements.
-
-Pain Points:
-
-- Doesn't know whether she's eligible for companies.
-
-How CRP Helps:
-
-- Eligibility checker.
-- Resume analysis.
-- Career readiness score.
-
----
-
-## Persona 3 – Final-Year Graduate
-
-Goal:
-
-- Apply confidently.
-
-Pain Points:
-
-- Resume confidence.
-
-How CRP Helps:
-
-- AI feedback.
-- Dashboard tracking.
-
----
-
-# 6. Product Goals
-
-## Business Goals
-
-- Provide a complete career readiness workflow.
-- Increase student confidence.
-- Reduce preparation confusion.
-
-## User Goals
-
-- Upload resume.
-- Get AI feedback.
-- Find missing skills.
-- Check eligibility.
-- Improve readiness.
-
----
-
-# 7. Non-Goals
-
-The MVP will NOT include:
-
-- Video courses
-- Coding challenges
-- Live interviews
-- Job applications
-- Social networking
-- Chat system
-
-These features may appear later.
-
----
-
-# 8. Market Gap
-
-Most platforms solve one problem.
-
-This platform solves an entire workflow.
-
-Current Flow:
-
-Resume
-
-↓
-
-Feedback
-
-↓
-
-Skills
-
-↓
-
-Company Check
-
-↓
-
-Planning
-
-The product combines everything into one experience.
-
----
-
-# 9. Product Scope
-
-## In Scope
-
-- Authentication
-- Student profile
-- Resume upload
-- AI analysis
-- Career score
-- Skill gap
-- Recommendations
-- Company eligibility
-- Dashboard
-
-## Out of Scope
-
-- Course hosting
-- Recruiter portal
-- Payments
-- Notifications
-- Interview scheduling
-
----
-
-# 10. End-to-End User Journey
-
-### Step 1
-
-Student registers.
-
-↓
-
-### Step 2
-
-Logs in.
-
-↓
-
-### Step 3
-
-Completes profile.
-
-↓
-
-### Step 4
-
-Uploads resume.
-
-↓
-
-### Step 5
-
-AI analyzes resume.
-
-↓
-
-### Step 6
-
-Skill gap is calculated.
-
-↓
-
-### Step 7
-
-Career readiness score appears.
-
-↓
-
-### Step 8
-
-Learning recommendations are shown.
-
-↓
-
-### Step 9
-
-Student checks company eligibility.
-
----
-
-# 11. Functional Requirements
-
-## Authentication
-
-### Register
-
-User enters:
-
-- Name
-- Email
-- Password
-
-System:
-
-- Validates input.
-- Hashes password.
-- Stores account.
-- Returns success.
-
-### Login
-
-User enters:
-
-- Email
-- Password
-
-System:
-
-- Verifies credentials.
-- Generates JWT.
-- Returns token.
-
----
-
-## Student Profile
-
-User can:
-
-- View profile.
-- Edit profile.
-
-Fields:
-
-- Name
-- College
-- Degree
-- CGPA
-- Graduation Year
-- Skills
-- Target Role
-- GitHub
-- LinkedIn
-- Portfolio
-
----
-
-## Resume Upload
-
-Requirements:
-
-- PDF only
-- Maximum file size limit
-- Upload to Cloudinary
-- Store secure URL
-
----
-
-## AI Resume Analysis
-
-Input:
-
-Resume text
-
-Output:
-
-- Summary
-- Skills
-- Strengths
-- Weaknesses
-- Suggestions
-
-Example Output
-
+### 9.4 AI Resume Analysis
+**Input:** plain text extracted from the uploaded PDF.
+**Output (actual response shape):**
 ```json
 {
-  "summary":"Backend-focused student",
-  "skills":["Node.js","SQL"],
-  "strengths":["Good projects"],
-  "weaknesses":["No Docker"],
-  "suggestions":["Learn Docker"]
+  "skills": ["React", "Node.js", "MongoDB"],
+  "strengths": ["Strong evidence of full-stack project work"],
+  "weaknesses": ["No quantified outcomes in project bullet points"],
+  "suggestions": ["Add metrics such as test coverage % or performance gains"],
+  "readinessScore": 65
 }
 ```
+The AI model determines `readinessScore` holistically as part of its structured response, based on resume completeness, specificity, and relevance.
 
----
+### 9.5 Career Readiness Score
+A 0–100 indicator returned as part of the AI analysis response, presented as an internal, platform-specific indicator — not an industry-standard or guaranteed metric.
 
-## Career Readiness Score
+### 9.6 Skill Gap Analysis
+Student selects a target role (Frontend / Backend / Full Stack / Data Analyst). System compares the skills extracted from their resume against that role's `expected_skills` (stored in Postgres), and surfaces the difference with a priority label (High/Medium/Low).
 
-Purpose
+### 9.7 Learning Recommendations
+For each missing skill, the platform surfaces a priority and a link to an external resource — it does not host or teach the content itself.
 
-Provide an easy-to-understand readiness indicator.
+### 9.8 Company Eligibility Checker
+Student selects a company. System compares their CGPA, graduation year, and skills against that company's `eligibility_criteria` row (Postgres, via a JOIN) and returns Eligible / Not Eligible with the specific missing requirements listed.
 
-Range
+### 9.9 Dashboard
+Displays: profile summary, resume upload/analysis panel, readiness score, skills/strengths/weaknesses/suggestions from the latest analysis, skill gap panel, eligibility panel.
 
-0–100
+## 10. User Stories
+- As a student, I want to register so that I can access my dashboard.
+- As a student, I want to log in so that my data stays private and secure.
+- As a student, I want to upload my resume so that AI can analyze it and tell me what to improve.
+- As a student, I want to see my extracted skills and readiness score so I know where I stand today.
+- As a student, I want to compare my skills against a target role so I know what to learn next.
+- As a student, I want to check a company's eligibility criteria so I can apply with realistic expectations.
 
-### Scoring Formula
+## 11. Acceptance Criteria
 
-| Component | Weight |
-|-----------|---------|
-| Profile Completion | 25% |
-| Resume Quality | 35% |
-| Skill Match | 30% |
-| Experience Bonus | 10% |
+| Feature | Criteria |
+|---|---|
+| Register | Valid email accepted; password hashed before storage; duplicate email rejected with 400 |
+| Login | Valid credentials return a JWT with 200; invalid credentials return 401 with a generic message |
+| Profile | Authenticated user can view and update their own fields only; changes persist in Postgres |
+| Resume upload | Only PDFs up to 5MB accepted; a Cloudinary URL is returned and persisted |
+| AI analysis | Returns a parsed JSON object matching the defined schema; malformed AI output returns a 502, not a crash |
+| Dashboard | Loads without crashing for a logged-in user; redirects to login if unauthenticated |
 
-Example
+## 12. Non-Functional Requirements
 
-| Component | Score |
-|-----------|---------|
-| Profile | 20 |
-| Resume | 30 |
-| Skills | 24 |
-| Experience | 8 |
+**Security:** bcrypt password hashing; JWT-based route protection; secrets in environment variables, never committed; parameterized SQL queries (no string concatenation).
 
-Final Score
+**Reliability:** centralized error handling with consistent response shapes; databases fail gracefully (server continues running, logs a warning) rather than crashing the whole app on a single dependency outage.
 
-82/100
+**Performance:** stateless API design allows horizontal scaling; Postgres used for small, indexable relational lookups; Mongo used for variable-shaped AI output.
 
----
+**Usability:** responsive layout; clear loading and error states, especially around the AI call, which has real, user-visible latency.
 
-## Skill Gap Analysis
+## 13. Success Metrics
+Functional correctness — each mandatory Project Score concept demonstrably backed by working, testable code — matters more here than traffic/scale metrics, given the academic context. Practically: successful register/login rate in testing, successful resume upload + analysis completion rate, and readiness score displayed correctly on the dashboard.
 
-User selects:
-
-- Frontend
-- Backend
-- Full Stack
-- Data Analyst
-
-System compares:
-
-Current skills
-
-vs
-
-Expected skills.
-
-Example
-
-| Current | Missing |
-|----------|----------|
-| HTML | Docker |
-| CSS | Redis |
-| JavaScript | Testing |
-
-Priority:
-
-- High
-- Medium
-- Low
-
----
-
-## Learning Recommendations
-
-Instead of teaching,
-
-recommend:
-
-- Skill
-- Priority
-- External resource
-
-Example
-
-| Skill | Priority |
-|---------|-----------|
-| Docker | High |
-| Redis | Medium |
-| CI/CD | Low |
-
----
-
-## Company Eligibility Checker
-
-Student selects a company.
-
-System compares:
-
-- CGPA
-- Skills
-- Graduation Year
-
-Output
-
-Eligible
-
-or
-
-Not Eligible
-
-Example
-
-Google
-
-Missing:
-
-- Docker
-- DSA
-
-TCS
-
-Eligible
-
----
-
-## Dashboard
-
-Displays:
-
-- Welcome section
-- Career score
-- Resume status
-- Missing skills
-- AI insights
-- Company eligibility
-- Recommendations
-
----
-
-# 12. Feature Specifications
-
-## Dashboard Cards
-
-### Card 1
-
-Career Readiness Score
-
-### Card 2
-
-Resume Status
-
-### Card 3
-
-Profile Completion
-
-### Card 4
-
-Missing Skills
-
-### Card 5
-
-Recommendations
-
-### Card 6
-
-Recent AI Analysis
-
----
-
-# 13. User Stories
-
-## Authentication
-
-As a student,
-
-I want to register
-
-so that I can access my dashboard.
-
----
-
-As a student,
-
-I want to log in
-
-so that my data remains secure.
-
----
-
-## Resume
-
-As a student,
-
-I want to upload my resume
-
-so that AI can analyze it.
-
----
-
-## Skill Gap
-
-As a student,
-
-I want to compare my skills
-
-so that I know what to learn next.
-
----
-
-## Eligibility
-
-As a student,
-
-I want to check company requirements
-
-so that I apply confidently.
-
----
-
-# 14. Acceptance Criteria
-
-## Register
-
-- Valid email accepted
-- Password hashed
-- Duplicate email rejected
-
-## Login
-
-- Valid credentials return JWT
-- Invalid credentials return 401
-
-## Profile
-
-- User can edit fields
-- Changes persist
-
-## Resume Upload
-
-- PDF uploads successfully
-- Cloudinary URL stored
-
-## AI Analysis
-
-- Structured response displayed
-
-## Dashboard
-
-- Loads without crashing
-- Shows latest analysis
-
----
-
-# 15. Non-Functional Requirements
-
-## Security
-
-- bcrypt password hashing
-- JWT authentication
-- Protected routes
-- Environment variables
-- Input validation
-
-## Performance
-
-- Fast API responses
-- Responsive interface
-- Efficient database queries
-
-## Reliability
-
-- Proper error handling
-- Consistent API responses
-- Safe file uploads
-
-## Usability
-
-- Mobile responsive
-- Simple navigation
-- Clear feedback messages
-
----
-
-# 16. Success Metrics
-
-| Metric | Target |
-|---------|---------|
-| Registration Success | High |
-| Login Success | High |
-| Resume Upload Success | High |
-| AI Analysis Completion | High |
-| Dashboard Load Time | Low latency |
-| Company Check Completion | High |
-
----
-
-# 17. Risks
+## 14. Risks & Mitigations
 
 | Risk | Mitigation |
-|------|------------|
-| AI API downtime | Retry + error message |
-| Upload failure | Validation + retry |
-| Invalid resume | AI fallback |
-| JWT expiration | Re-login |
-| Database failure | Error handling |
+|---|---|
+| AI API downtime or malformed response | Try/catch around JSON parsing; returns 502 with a clear error rather than crashing; frontend shows a retry-friendly error state |
+| Upload failure (wrong type/size) | Server-side validation via multer before the file ever reaches Cloudinary |
+| Database outage | Graceful degradation — server logs a warning and continues running rather than crashing entirely (tested in practice against a real network outage during development) |
+| JWT expiration | User is prompted to log in again; no silent failure |
+| LLM model deprecation | Using a model *alias* (`gemini-flash-latest`) rather than a dated model name, after encountering two deprecated dated models during development |
 
----
+## 15. Delivery Roadmap
 
-# 18. Future Roadmap
+**Delivered:** authentication, profile CRUD, PostgreSQL schema with seed data, MongoDB schemas, resume upload via Cloudinary, AI resume analysis via Gemini with structured JSON output, styled and tested frontend for auth + dashboard + resume flow.
 
-Phase 2
+**In progress:** skill gap comparison, career-readiness score formula, company eligibility checker, learning recommendations, unified dashboard integrating all panels, deployment.
 
-- Application tracker
-- Resume history
-- Notifications
-- Admin dashboard
+**Planned (post-MVP):** goal-based onboarding (internship vs. full-time), application tracker, resume version history, mock interview preparation, admin analytics dashboard.
 
-Phase 3
+## 16. Assumptions
+- Students upload resumes as PDF text (not scanned images requiring OCR).
+- A stable internet connection is available for AI/API calls.
+- Gemini reliably returns valid or near-valid JSON when explicitly instructed to (defensive parsing handles the edge cases where it doesn't).
+- Company eligibility criteria are platform-seeded/illustrative, not sourced from live company data feeds.
 
-- Mock interviews
-- Analytics
-- Recruiter portal
-- AI career roadmap
+## 17. Open Questions
+- Should a user be able to upload and compare multiple resume versions over time?
+- Should skill-gap recommendations become personalized based on resume history rather than a single static mapping?
+- Should college mentors/placement coordinators get a read-only view of aggregate student readiness?
 
----
-
-# 19. Assumptions
-
-- Students upload PDF resumes.
-- Internet connection is available.
-- AI returns valid JSON.
-- Companies have predefined eligibility criteria.
-
----
-
-# 20. Open Questions
-
-Future decisions:
-
-- Should multiple resumes be supported?
-- Should AI remember previous analyses?
-- Should mentors receive dashboards?
-- Should recommendations become personalized over time?
-
-These questions are intentionally left for future iterations and do not block the MVP.
+These are intentionally deferred and do not block the core product.
