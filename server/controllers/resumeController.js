@@ -3,6 +3,33 @@ const ResumeAnalysis = require("../models/ResumeAnalysis");
 const { PDFParse } = require("pdf-parse");
 const genAI = require("../config/gemini");
 
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function generateWithRetry(model, prompt, maxAttempts = 3) {
+  let lastError;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      return await model.generateContent(prompt);
+    } catch (err) {
+      lastError = err;
+      const message = String(err?.message || "");
+      const isTemporary503 = message.includes("503") || message.includes("high demand");
+
+      if (!isTemporary503 || attempt === maxAttempts) {
+        break;
+      }
+
+      // Backoff reduces immediate retries when Gemini is under temporary load.
+      await wait(1200 * attempt);
+    }
+  }
+
+  throw lastError;
+}
+
 const analyzeResume = asyncHandler(async (req, res) => {
   const { resumeId } = req.body;
 
@@ -46,8 +73,20 @@ ${resumeText}
 
   // Call Gemini
   const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
-  const aiResult = await model.generateContent(prompt);
-  const responseText = aiResult.response.text();
+  let responseText;
+  try {
+    const aiResult = await generateWithRetry(model, prompt, 3);
+    responseText = aiResult.response.text();
+  } catch (err) {
+    const message = String(err?.message || "");
+    const isTemporary503 = message.includes("503") || message.includes("high demand");
+
+    if (isTemporary503) {
+      throw new AppError("AI service is busy right now. Please retry in a few seconds.", 503);
+    }
+
+    throw new AppError("AI analysis failed. Please try again.", 502);
+  }
 
   // Parse the JSON response
   let analysisData;

@@ -4,6 +4,7 @@ import { apiRequest } from '../api';
 import { validatePassword } from '../utils/validatePassword';
 import AuthToggle from '../components/AuthToggle';
 import AuthLayout from '../components/AuthLayout';
+import PasswordInput from '../components/PasswordInput';
 
 function Register() {
   const [name, setName] = useState('');
@@ -83,14 +84,7 @@ function Register() {
           </div>
           <div>
             <label className="block text-xs font-medium text-[#5B6670] mb-1.5">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="••••••••"
-              className="w-full border border-[#D8D5CA] rounded-lg px-3.5 py-2.5 text-sm bg-[#FBFAF6] focus:outline-none focus:border-[#1F6F5C]"
-            />
+            <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} />
             {password.length > 0 && (
               <ul className="mt-2 space-y-1">
                 {rules.map((rule) => (

@@ -1,100 +1,108 @@
-# Nexora
-**High-Level Design (HLD)**
+# High-Level Design (HLD)
+## Nexora — Resume Readiness & Skill-Gap Platform
+
+**Version:** 1.0
+**Status:** Reflects the current, implemented architecture
 
 ---
 
-## 1. Architecture Overview
+## 1. Architecture Style
 
-Nexora follows a three-layer architecture: client, API, and data/external services.
+A classic **3-tier web application** with a **polyglot persistence layer** (one relational store for structured/relational data, one document store for AI-derived/semi-structured data) and one external AI service integration.
 
 ```
-                    ┌──────────────────────┐
-                    │     React Frontend     │
-                    │  (Vite, Router, Tailwind) │
-                    └───────────┬──────────┘
-                                │  REST (JSON + multipart)
-                    ┌───────────▼──────────┐
-                    │    Express Backend     │
-                    │  (Node.js, middleware  │
-                    │   chain, JWT auth)     │
-                    └───────────┬──────────┘
-           ┌─────────────┬──────┼──────┬─────────────┐
-           │             │      │      │             │
-    ┌──────▼─────┐ ┌─────▼────┐│┌──────▼──────┐┌─────▼──────┐
-    │ PostgreSQL │ │ MongoDB  │││ Cloudinary  ││ Gemini API │
-    │  (Neon)    │ │ (Atlas)  │││ (PDF store) ││ (analysis) │
-    └────────────┘ └──────────┘│└─────────────┘└────────────┘
+┌─────────────────────┐        HTTPS/JSON        ┌──────────────────────────┐
+│   React SPA (Vite)  │ ───────────────────────▶ │  Express REST API        │
+│   client/           │ ◀─────────────────────── │  server/                 │
+│  - React Router     │                            │  - authRoutes            │
+│  - useState/Effect  │                            │  - profileRoutes         │
+│  - api.js (fetch)   │                            │  - resumeRoutes          │
+└──────────────────────┘                           │  - JWT auth middleware   │
+                                                     │  - centralized error    │
+                                                     │    handling              │
+                                                     └───────┬────────┬────────┘
+                                                             │        │
+                                     ┌───────────────────────┘        └─────────────────┐
+                                     ▼                                                    ▼
+                       ┌───────────────────────────┐                      ┌───────────────────────────┐
+                       │  PostgreSQL                │                      │  MongoDB (Mongoose)        │
+                       │  - users                   │                      │  - ResumeAnalysis           │
+                       │  - target_roles            │                      │  - Recommendation           │
+                       │  - companies               │                      │  - SkillGap                 │
+                       │  - eligibility_criteria     │                      └───────────────────────────┘
+                       └───────────────────────────┘
+
+                       External services:
+                       ┌───────────────────────────┐    ┌───────────────────────────┐
+                       │  Cloudinary                 │    │  Google Gemini API          │
+                       │  (resume PDF storage)        │    │  (resume text analysis)     │
+                       └───────────────────────────┘    └───────────────────────────┘
 ```
 
-## 2. System Components
+## 2. Components
 
-### 2.1 Frontend
-**Technology:** React (Vite), React Router, Tailwind CSS.
-**Responsibilities:** authentication screens (login/register with client-side validation), protected dashboard routing, resume upload UI with two-stage loading states (upload, then AI analysis), rendering structured AI results.
+### 2.1 Frontend (`client/`)
+- **Framework:** React (Vite bundler), React Router (`react-router-dom`) for client-side routing.
+- **Pages:** `Login`, `Register`, `Dashboard` (protected).
+- **Shared components:** `AuthLayout`, `AuthToggle`, `PasswordInput`, `ProtectedRoute`, `ResumeUpload`.
+- **Data layer:** a single `api.js` module wrapping `fetch` — `apiRequest()` for JSON calls (auto-attaches JWT from `localStorage`, throws on non-2xx) and `uploadResume()` for multipart file upload.
+- **State:** component-local `useState`; no global state manager (Redux/Context) — appropriate for this scope since state doesn't cross more than one page.
+- **Session:** JWT stored in `localStorage`; `ProtectedRoute` gates `/dashboard` by presence of the token (client-side only — no token expiry check on the frontend).
 
-### 2.2 Backend
-**Technology:** Node.js, Express.
-**Responsibilities:** REST API surface, JWT issuance and verification, request validation, centralized error handling, orchestrating calls to Postgres, Mongo, Cloudinary, and Gemini.
+### 2.2 Backend (`server/`)
+- **Framework:** Express.js.
+- **Layering:** `routes/` → `controllers/` → `models/` (Mongo) or direct `pgPool.query` (Postgres), with `middleware/` cutting across all layers.
+- **Middleware stack:** `cors()`, `express.json()`, `requireAuth` (route-scoped), `errorHandler` (global, mounted last).
+- **Error model:** a single `AppError(message, status)` class thrown from anywhere in a controller; `asyncHandler()` wraps every async route handler to forward rejected promises to `next(err)`; the global `errorHandler` middleware converts any error to a consistent `{ error: message }` JSON body with the right status.
+- **Startup sequence (`server.js`):** load env → attempt Postgres connect → attempt Mongo connect → mount routes → start HTTP listener. Both DB connections are **soft-fail** (logged warning, not a crash), so the API stays up for debugging even if one datastore is down.
 
-### 2.3 PostgreSQL (Neon)
-Stores structured, relational data with enforced foreign-key relationships: `users`, `target_roles`, `companies`, `eligibility_criteria`. Chosen for data where relationships and JOINs are core to the feature (e.g., comparing a user's profile against a company's criteria row).
+### 2.3 Data Stores
+- **PostgreSQL** — source of truth for anything relational/structured: `users`, `target_roles`, `companies`, `eligibility_criteria`, linked via foreign keys (`users.target_role_id → target_roles.id`, `eligibility_criteria.company_id → companies.id`).
+- **MongoDB (via Mongoose)** — source of truth for AI-derived, semi-structured, append-heavy data: `ResumeAnalysis`, `Recommendation`, `SkillGap`. Each document cross-references the Postgres user by numeric `userId` (no native FK — a deliberate polyglot-persistence tradeoff).
 
-### 2.4 MongoDB (Atlas)
-Stores variable-shaped, AI-generated data: `resumeanalyses`, `skillgaps`, `recommendations`. Chosen because the AI's output shape is naturally document-like and doesn't benefit from a fixed relational schema.
+### 2.4 External Integrations
+- **Cloudinary** — resume PDFs are streamed directly to Cloudinary via `multer-storage-cloudinary`; only the resulting URL is persisted in Mongo (the server never stores the file itself).
+- **Google Gemini (`@google/generative-ai`)** — `resumeController.js` builds a strict-JSON-only prompt, calls `gemini-flash-latest`, retries transient `503`/overload errors up to 3× with increasing backoff, and validates/parses the JSON before persisting.
 
-### 2.5 Cloudinary
-Stores uploaded resume PDFs outside the application server (which would lose files on redeploy, given ephemeral hosting filesystems). Returns a persistent URL, stored in the corresponding Mongo document.
+## 3. Cross-Cutting Concerns
 
-### 2.6 Gemini API
-Receives extracted resume text plus a structured-output prompt; returns a JSON object (skills, strengths, weaknesses, suggestions, readiness score), parsed and persisted by the backend.
-
-**Provider note:** the platform uses Google's Gemini API (`@google/generative-ai`), selected for free-tier accessibility. The model reference used is `gemini-flash-latest` — an alias rather than a dated model name, adopted after two dated models (`gemini-1.5-flash`, `gemini-2.5-flash`) were found deprecated/restricted at build time. Using an alias insulates the integration from future model rotations.
-
-## 3. API Surface
-
-| Category | Endpoint | Status |
-|---|---|---|
-| Auth | `POST /api/auth/register` | Delivered |
-| Auth | `POST /api/auth/login` | Delivered |
-| Profile | `GET /api/profile` | Delivered |
-| Profile | `PUT /api/profile` | Delivered |
-| Resume | `POST /api/resume/upload` | Delivered |
-| Resume | `POST /api/resume/analyze` | Delivered |
-| Career | `GET /api/skill-gap/:targetRoleId` | In progress |
-| Career | `GET /api/companies/:id/eligibility` | In progress |
-| Career | `GET /api/recommendations` | In progress |
-| System | `GET /api/health` | Delivered |
-
-## 4. Security Design
-- Passwords hashed with bcrypt (cost factor 10) before storage; never stored or logged in plain text.
-- JWT-protected routes via a `requireAuth` middleware; tokens carry only non-sensitive identifiers (`id`, `email`), never the password hash.
-- All secrets (DB URLs, JWT secret, Cloudinary and Gemini credentials) live in environment variables, excluded from version control via `.gitignore`; a `.env.example` documents required keys without values.
-- SQL queries are parameterized (`$1, $2, …`) throughout — no string concatenation of user input into queries.
-- Frontend route protection (`ProtectedRoute`) is explicitly a UX layer only; actual authorization is enforced server-side on every protected request, independent of what the client claims.
-
-## 5. Error Handling Strategy
-A single response contract across the API: `{ "error": "<message>" }` paired with an appropriate HTTP status code, produced by a centralized `errorHandler` middleware. All controller functions are wrapped in an `asyncHandler` utility so thrown errors and rejected promises are automatically routed to this handler rather than crashing the process or hanging the request.
-
-Specific failure modes handled deliberately:
-- **Database unreachable:** server logs a warning and continues running (graceful degradation), rather than refusing to start — verified against a real `ETIMEDOUT` outage during development.
-- **AI response malformed:** defensive stripping of markdown fences before `JSON.parse`; a parse failure returns 502 rather than propagating a raw exception.
-- **Invalid file upload:** rejected by multer (type/size) before reaching Cloudinary.
-
-## 6. Scalability Considerations
-The API is stateless (all session state lives in the client-held JWT), making it horizontally scalable behind a load balancer if needed. The Gemini call is the primary latency and cost driver per resume-analysis request; caching or request queuing would be the natural next optimization under sustained load.
-
-## 7. Tech Stack Summary
-| Layer | Technology |
+| Concern | Approach |
 |---|---|
-| Frontend | React (Vite), React Router, Tailwind CSS |
-| Backend | Node.js, Express |
-| Relational DB | PostgreSQL (Neon), via `pg` |
-| Document DB | MongoDB (Atlas), via Mongoose |
-| Auth | JWT (`jsonwebtoken`), bcrypt |
-| File storage | Cloudinary, `multer`, `multer-storage-cloudinary` |
-| PDF parsing | `pdf-parse` (v2 class-based API) |
-| AI | Google Gemini API (`@google/generative-ai`) |
-| Deployment (planned) | Vercel (frontend), Render/Railway (backend) |
+| **AuthN** | JWT (HS256, `JWT_SECRET`), 7-day expiry, verified per-request in `requireAuth` middleware |
+| **AuthZ** | Single-tier — any valid token grants access to that user's own resources only (enforced by scoping every query to `req.user.id`) |
+| **Secrets management** | `.env` + `dotenv`, never committed/hard-coded; consumed via `process.env.*` in `postgres.js`, `mongo.js`, `cloudinary.js`, `gemini.js` |
+| **Error handling** | Centralized (`AppError` + `asyncHandler` + `errorHandler`) — no per-route try/catch boilerplate |
+| **Resilience** | AI call retry-with-backoff; DB connections are non-fatal on boot |
+| **File handling** | Multer with a 5MB limit and PDF-only `allowed_formats`, streamed straight to Cloudinary (no local disk writes) |
+| **CORS** | Enabled globally via `cors()` (currently unrestricted origin — fine for dev, should be locked down for prod) |
 
-## 8. Future Scaling Notes
-Possible future improvements: Redis caching for repeated eligibility lookups, Docker containerization of the backend, a background job queue for AI analysis (to decouple upload from the synchronous AI wait), horizontal scaling behind a load balancer if usage grew significantly.
+## 4. Request Flow — Example: "Upload & Analyze Resume"
+
+1. User selects a PDF in `ResumeUpload.jsx` → `uploadResume(file)` → `POST /api/resume/upload` (multipart, JWT header).
+2. `requireAuth` verifies JWT → `upload.single("resume")` (Multer/Cloudinary) streams file to Cloudinary → `uploadController` creates a `ResumeAnalysis` Mongo doc with `{ userId, resumeUrl }` → responds `201` with `resumeId`.
+3. Frontend immediately calls `POST /api/resume/analyze` with that `resumeId`.
+4. `analyzeResume` controller: fetch PDF bytes from Cloudinary URL → extract text (`pdf-parse`) → build prompt → call Gemini with retry → parse JSON → update the same Mongo doc → respond `200` with the full analysis.
+5. Frontend sets `analysis` state → Dashboard re-renders the results.
+
+## 5. Deployment Topology (implied by config)
+
+- Frontend: static Vite build (`dist/`) — deployable to any static host.
+- Backend: single Node/Express process, port from `process.env.PORT` (defaults to 5000), currently pointed at by the frontend via a hard-coded `http://localhost:5000/api` (would need to become an env-driven `VITE_API_URL` for non-local deployment).
+- Databases: externally hosted Postgres + MongoDB (connection strings via env).
+
+## 6. Key Design Decisions & Rationale
+
+| Decision | Rationale |
+|---|---|
+| Postgres for user/role/company/eligibility data | This data is inherently relational (FKs, joins for eligibility lookups) and benefits from strong schema + integrity constraints |
+| MongoDB for resume analysis/recommendations/skill-gap | This data is AI-generated, schema-flexible, and append-oriented (new analysis per upload) — a better fit than rigid relational tables |
+| Deterministic readiness score computed server-side, separate from the AI's own score | Keeps the "official" score auditable and reproducible, independent of AI non-determinism; AI score is kept alongside for transparency |
+| Soft-fail DB connections on boot | Lets the API start and serve `/api/health` even during partial infra outages, rather than crash-looping |
+| Retry-with-backoff only for Gemini `503`/overload | Avoids retrying non-transient errors (e.g., bad API key, malformed prompt) which would waste time and mask real bugs |
+
+## 7. Known Architectural Gaps
+
+- No API gateway/rate limiting layer — a user (or script) can hammer `/api/resume/analyze` with no throttling.
+- No refresh-token mechanism — a 7-day JWT is the only session control (no server-side revocation list).
+- No caching layer (e.g., Redis) — `target_roles`/`RESOURCE_MAP` are re-queried/rebuilt on every request even though they change rarely.
+- Frontend API base URL is hard-coded rather than environment-driven.

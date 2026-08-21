@@ -20,3 +20,20 @@ export async function apiRequest(endpoint, options = {}) {
 
   return data;
 }
+export async function uploadResume(file) {
+  const token = localStorage.getItem("token");
+  const formData = new FormData();
+  formData.append("resume", file);
+
+  const res = await fetch(`${API_URL}/resume/upload`, {
+    method: "POST",
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: formData,
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || "Upload failed");
+  return data;
+}

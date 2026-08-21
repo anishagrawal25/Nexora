@@ -18,6 +18,11 @@ const resumeAnalysisSchema = new mongoose.Schema({
     min: 0,
     max: 100,
   },
+  deterministicReadinessScore: {
+    type: Number,
+    min: 0,
+    max: 100,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
