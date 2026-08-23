@@ -5,6 +5,17 @@ const { AppError, asyncHandler } = require("../middleware/errorHandler");
 const ResumeAnalysis = require("../models/ResumeAnalysis");
 const SkillGap = require("../models/SkillGap");
 const Recommendation = require("../models/Recommendation");
+
+// HOISTING NOTE: `router` must be declared with `const` before any
+// route (router.get/put/etc.) references it below. Unlike `function`
+// declarations — which are fully hoisted and callable before their
+// written position — `const`/`let` bindings are hoisted but remain
+// in the "temporal dead zone" until this line actually executes.
+// I hit this directly: an earlier version of this file called
+// router.get(...) before this declaration existed, which threw
+// "ReferenceError: Cannot access 'router' before initialization"
+// instead of a vaguer failure — a direct, practical illustration
+// of how `const` hoisting differs from `var`/function hoisting.
 const router = Router();
 
 const RESOURCE_MAP = {
@@ -119,6 +130,7 @@ router.get(
     res.status(200).json(user);
   })
 );
+
 router.put(
   "/",
   requireAuth,
