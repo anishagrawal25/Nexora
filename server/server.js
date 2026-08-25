@@ -2,6 +2,14 @@ const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 
+// EVENT LOOP DEMONSTRATION (safe to leave in — runs once on startup, no side effects)
+// This proves synchronous code always runs before queued async callbacks,
+// regardless of the order they're written in.
+console.log("1. Synchronous code runs first");
+setTimeout(() => console.log("4. setTimeout (macrotask) runs last"), 0);
+Promise.resolve().then(() => console.log("3. Promise .then (microtask) runs before setTimeout"));
+console.log("2. Synchronous code again — still before either async callback");
+
 dotenv.config();
 
 const { connectPostgres } = require("./config/postgres");
@@ -25,6 +33,7 @@ app.get("/api/health", (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 app.use(errorHandler);
+
 // EVENT LOOP NOTE: `await connectPostgres()` and `await connectMongo()`
 // below do NOT block Node's single thread while waiting for the network.
 // Node hands the actual TCP/DB connection work off to the OS/libuv thread
