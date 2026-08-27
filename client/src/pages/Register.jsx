@@ -5,6 +5,7 @@ import { validatePassword } from '../utils/validatePassword';
 import AuthToggle from '../components/AuthToggle';
 import AuthLayout from '../components/AuthLayout';
 import PasswordInput from '../components/PasswordInput';
+import { validateEmail } from '../utils/validateEmail';
 
 function Register() {
   const [name, setName] = useState('');
@@ -24,6 +25,9 @@ function Register() {
       setError('Password does not meet the requirements below.');
       return;
     }
+    if (!validateEmail(email)) {
+      setError('Please enter a valid email address.');
+      return;}
 
     setLoading(true);
     try {
