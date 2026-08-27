@@ -4,6 +4,8 @@ import { apiRequest } from '../api';
 import AuthToggle from '../components/AuthToggle';
 import AuthLayout from '../components/AuthLayout';
 import PasswordInput from '../components/PasswordInput';
+import { validateEmail } from '../utils/validateEmail';
+
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -15,6 +17,10 @@ function Login() {
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
+    if (!validateEmail(email)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
     setLoading(true);
     try {
       const data = await apiRequest('/auth/login', {
