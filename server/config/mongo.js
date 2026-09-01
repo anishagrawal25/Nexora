@@ -2,19 +2,19 @@ const mongoose = require("mongoose");
 
 async function connectMongo() {
   if (!process.env.MONGO_URI) {
-    console.warn("MONGO_URI is not set; skipping MongoDB connection.");
+    console.warn("MONGO_URI is not set; using resilient in-memory storage fallback.");
     return false;
   }
 
   try {
-    console.log("Attempting Mongo connection...");
+    console.log("Attempting MongoDB Atlas connection...");
     await mongoose.connect(process.env.MONGO_URI, {
-      serverSelectionTimeoutMS: 8000,
+      serverSelectionTimeoutMS: 3000,
     });
-    console.log("MongoDB connected");
+    console.log("MongoDB connected to Atlas");
     return true;
   } catch (err) {
-    console.error("MongoDB connection failed:", err.message);
+    console.warn("MongoDB Atlas connection failed (" + err.message + "); using resilient local storage fallback.");
     return false;
   }
 }

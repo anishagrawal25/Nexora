@@ -1,6 +1,10 @@
-const { Pool } = require("pg");
+const { Pool: NeonPool } = require("@neondatabase/serverless");
+const { Pool: PgPool } = require("pg");
 
-const pgPool = new Pool({
+const isNeon = process.env.DATABASE_URL && process.env.DATABASE_URL.includes("neon.tech");
+const PoolClass = isNeon ? NeonPool : PgPool;
+
+const pgPool = new PoolClass({
   connectionString: process.env.DATABASE_URL,
 });
 
@@ -17,7 +21,7 @@ async function connectPostgres() {
     console.log("Postgres connected");
     return true;
   } catch (err) {
-    console.error("Postgres connection failed. Code:", err.code, "Message:", err.message, "Full:", err);
+    console.error("Postgres connection failed. Code:", err.code, "Message:", err.message);
     return false;
   }
 }
