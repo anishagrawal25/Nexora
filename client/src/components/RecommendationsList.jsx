@@ -14,7 +14,11 @@ function RecommendationsList({ targetRole, hasResume }) {
     setError('');
 
     try {
-      const data = await apiRequest('/profile/recommendations');
+      const roleName = typeof targetRole === 'string' ? targetRole : targetRole?.name || '';
+      const endpoint = roleName
+        ? `/profile/recommendations?targetRole=${encodeURIComponent(roleName)}`
+        : '/profile/recommendations';
+      const data = await apiRequest(endpoint);
       setRecommendations(data.items || []);
     } catch (err) {
       setError(err.message);

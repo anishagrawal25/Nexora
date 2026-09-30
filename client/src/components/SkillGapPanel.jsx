@@ -1,13 +1,27 @@
 import { useState } from 'react';
-import { Target, RefreshCw, AlertTriangle, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Target, RefreshCw, AlertTriangle, CheckCircle2, Sparkles } from 'lucide-react';
 import { apiRequest } from '../api';
+import Combobox from './Combobox';
 
-function SkillGapPanel({ skillGap, targetRole, roles = [], onSelectTargetRole, onSkillGapUpdated, hasResume }) {
+function SkillGapPanel({
+  skillGap,
+  targetRole,
+  roles = [],
+  onSelectTargetRole,
+  onSkillGapUpdated,
+  hasResume,
+}) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  async function handleGenerateSkillGap() {
-    if (!targetRole) {
+  const targetRoleName =
+    typeof targetRole === 'string'
+      ? targetRole
+      : targetRole?.name || skillGap?.targetRole || '';
+
+  async function handleGenerateSkillGap(customRoleName) {
+    const roleToUse = customRoleName || targetRoleName;
+    if (!roleToUse) {
       return;
     }
     if (!hasResume) {
@@ -18,9 +32,14 @@ function SkillGapPanel({ skillGap, targetRole, roles = [], onSelectTargetRole, o
     setError('');
     setLoading(true);
     try {
+      const payload =
+        targetRole && targetRole.id && !customRoleName
+          ? { targetRoleId: targetRole.id }
+          : { targetRole: roleToUse };
+
       const data = await apiRequest('/profile/skill-gap', {
         method: 'POST',
-        body: JSON.stringify({ targetRoleId: targetRole.id }),
+        body: JSON.stringify(payload),
       });
       if (onSkillGapUpdated) {
         onSkillGapUpdated(data.skillGap);
@@ -48,7 +67,7 @@ function SkillGapPanel({ skillGap, targetRole, roles = [], onSelectTargetRole, o
   }
 
   return (
-    <div className="bg-white border border-[#E4E1D8] rounded-2xl p-6 sm:p-7">
+    <div className="bg-white border border-[#E4E1D8] rounded-2xl p-6 sm:p-7 shadow-2xs">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#E4E1D8]">
         <div>
           <p className="font-mono text-xs tracking-widest text-[#1F6F5C] uppercase mb-1">
@@ -61,22 +80,20 @@ function SkillGapPanel({ skillGap, targetRole, roles = [], onSelectTargetRole, o
             Role Skill Gap Analysis
           </h2>
           <p className="text-xs text-[#5B6670] mt-1">
-            {targetRole ? (
+            {targetRoleName ? (
               <>
                 Targeting:{' '}
-                <strong className="text-[#12181B]">
-                  {targetRole.name}
-                </strong>
+                <strong className="text-[#12181B]">{targetRoleName}</strong>
               </>
             ) : (
-              'Compare your resume skills against targeted role benchmarks'
+              'Compare your resume skills against your dream role benchmarks'
             )}
           </p>
         </div>
 
-        {targetRole && (
+        {targetRoleName && (
           <button
-            onClick={handleGenerateSkillGap}
+            onClick={() => handleGenerateSkillGap()}
             disabled={loading}
             className="bg-[#1F6F5C] text-white text-xs font-medium px-4 py-2.5 rounded-xl hover:bg-[#195A4A] transition disabled:opacity-60 inline-flex items-center gap-2 self-start sm:self-auto cursor-pointer"
           >
@@ -93,38 +110,44 @@ function SkillGapPanel({ skillGap, targetRole, roles = [], onSelectTargetRole, o
         </div>
       )}
 
+      {/* Estimate Note Banner if custom fallback role was used */}
+      {skillGap?.isEstimate && (
+        <div className="mt-4 p-3.5 rounded-xl bg-[#FEF6E6] border border-[#FCE1B3] text-xs text-[#975A16] flex items-center gap-2">
+          <Sparkles className="w-4 h-4 shrink-0 text-[#975A16]" />
+          <span>
+            {skillGap.note ||
+              `General guidance — we don't have specific data for '${targetRoleName}' yet.`}
+          </span>
+        </div>
+      )}
+
       <div className="mt-6">
-        {!targetRole ? (
-          /* Inline prompt to pick a target role instead of showing an error */
+        {!targetRoleName ? (
+          /* Inline Combobox prompt to type or pick dream role */
           <div className="text-center py-10 px-4 border border-dashed border-[#D8D5CA] rounded-xl bg-[#FBFAF6]">
             <Target className="w-8 h-8 text-[#1F6F5C] mx-auto mb-2 opacity-80" />
             <h3
               className="italic text-lg text-[#12181B] mb-1"
               style={{ fontFamily: "'Fraunces', serif" }}
             >
-              Select a Target Role
+              Your dream role
             </h3>
             <p className="text-xs text-[#5B6670] max-w-sm mx-auto mb-5">
-              Choose the career track you&apos;re preparing for to calculate your skill gaps.
+              Type any career track or pick a suggestion to calculate your skill gaps.
             </p>
-            {roles && roles.length > 0 ? (
-              <div className="inline-flex items-center gap-2 bg-white border border-[#D8D5CA] p-1.5 rounded-xl shadow-2xs">
-                <select
-                  onChange={(e) => onSelectTargetRole && onSelectTargetRole(e.target.value)}
-                  defaultValue=""
-                  className="text-xs font-semibold bg-[#F4F2EB] text-[#12181B] border border-[#D8D5CA] rounded-lg py-2 px-3 focus:outline-none focus:ring-1 focus:ring-[#1F6F5C] cursor-pointer"
-                >
-                  <option value="" disabled>
-                    Choose your target role...
-                  </option>
-                  {roles.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ) : null}
+            <div className="max-w-xs mx-auto">
+              <Combobox
+                options={roles}
+                placeholder="Type your dream role..."
+                onChange={(val, matchedOpt) => {
+                  if (val && val.trim()) {
+                    if (onSelectTargetRole) {
+                      onSelectTargetRole(matchedOpt ? matchedOpt.id : null, val.trim());
+                    }
+                  }
+                }}
+              />
+            </div>
           </div>
         ) : !skillGap ? (
           <div className="text-center py-8 px-4 border border-dashed border-[#D8D5CA] rounded-xl bg-[#FBFAF6]">
@@ -133,13 +156,13 @@ function SkillGapPanel({ skillGap, targetRole, roles = [], onSelectTargetRole, o
               className="italic text-base text-[#12181B] mb-1"
               style={{ fontFamily: "'Fraunces', serif" }}
             >
-              Ready to analyze {targetRole.name}
+              Ready to analyze {targetRoleName}
             </p>
             <p className="text-xs text-[#5B6670] max-w-sm mx-auto mb-4">
-              Click below to compare your extracted skills against the {targetRole.name} benchmark.
+              Click below to compare your extracted resume skills against the {targetRoleName} benchmark.
             </p>
             <button
-              onClick={handleGenerateSkillGap}
+              onClick={() => handleGenerateSkillGap()}
               disabled={loading}
               className="text-xs font-medium text-[#1F6F5C] bg-[#EFECE2] border border-[#D8D5CA] px-4 py-2.5 rounded-xl hover:bg-[#E4E1D8] transition cursor-pointer"
             >
@@ -152,7 +175,7 @@ function SkillGapPanel({ skillGap, targetRole, roles = [], onSelectTargetRole, o
             <div>
               <p className="text-sm font-medium">Zero Skill Gaps Detected!</p>
               <p className="text-xs text-emerald-700 mt-0.5">
-                Your resume matches all expected technical skills for the {targetRole.name} benchmark.
+                Your resume matches all expected technical skills for the {targetRoleName} benchmark.
               </p>
             </div>
           </div>
@@ -160,7 +183,8 @@ function SkillGapPanel({ skillGap, targetRole, roles = [], onSelectTargetRole, o
           <div>
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-medium text-[#5B6670]">
-                Missing requirements ({missingSkills.length} skill{missingSkills.length === 1 ? '' : 's'})
+                Missing requirements ({missingSkills.length} skill
+                {missingSkills.length === 1 ? '' : 's'})
               </span>
               <span className="text-[11px] text-[#5B6670]">Ranked by hiring priority</span>
             </div>

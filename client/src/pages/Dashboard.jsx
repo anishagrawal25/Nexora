@@ -20,6 +20,8 @@ import SkillGapPanel from '../components/SkillGapPanel';
 import CompanyEligibility from '../components/CompanyEligibility';
 import RecommendationsList from '../components/RecommendationsList';
 
+import Combobox from '../components/Combobox';
+
 function calculateProfileCompleteness(profile) {
   if (!profile) return 0;
   const fields = [
@@ -37,6 +39,7 @@ function calculateProfileCompleteness(profile) {
 function Dashboard() {
   const [profile, setProfile] = useState(null);
   const [roles, setRoles] = useState([]);
+  const [selectedRoleName, setSelectedRoleName] = useState('');
   const [readinessData, setReadinessData] = useState(null);
   const [skillGap, setSkillGap] = useState(null);
   const [analysis, setAnalysis] = useState(null);
@@ -72,17 +75,31 @@ function Dashboard() {
       ]);
 
       setProfile(profileRes);
-      setRoles(rolesRes.roles || []);
+      const fetchedRoles = rolesRes.roles || [];
+      setRoles(fetchedRoles);
+
+      if (profileRes?.target_role_id) {
+        const found = fetchedRoles.find((r) => Number(r.id) === Number(profileRes.target_role_id));
+        if (found) {
+          setSelectedRoleName(found.name);
+        }
+      }
 
       if (readinessRes) {
         setReadinessData(readinessRes.readiness);
         if (readinessRes.latestAnalysis) {
           setAnalysis(readinessRes.latestAnalysis);
         }
+        if (readinessRes.profile?.target_role_name) {
+          setSelectedRoleName(readinessRes.profile.target_role_name);
+        }
       }
 
       if (skillGapRes?.skillGap) {
         setSkillGap(skillGapRes.skillGap);
+        if (skillGapRes.skillGap.targetRole) {
+          setSelectedRoleName(skillGapRes.skillGap.targetRole);
+        }
       }
 
       setFormData({
@@ -109,26 +126,38 @@ function Dashboard() {
     navigate('/login');
   }
 
-  async function handleTargetRoleChange(newRoleId) {
+  async function handleTargetRoleChange(newRoleId, customRoleName) {
     const roleIdNum = newRoleId ? Number(newRoleId) : null;
-    try {
-      const updated = await apiRequest('/profile', {
-        method: 'PUT',
-        body: JSON.stringify({
-          ...profile,
-          target_role_id: roleIdNum,
-        }),
-      });
+    const roleName = customRoleName || (roles.find((r) => Number(r.id) === roleIdNum)?.name) || '';
+    setSelectedRoleName(roleName);
 
-      setProfile(updated);
-      setFormData((prev) => ({ ...prev, target_role_id: newRoleId }));
+    try {
+      if (roleIdNum) {
+        const updated = await apiRequest('/profile', {
+          method: 'PUT',
+          body: JSON.stringify({
+            ...profile,
+            target_role_id: roleIdNum,
+          }),
+        });
+        setProfile(updated);
+        setFormData((prev) => ({ ...prev, target_role_id: roleIdNum }));
+      }
 
       // Refresh readiness & skill gap
+      const readinessUrl = roleIdNum
+        ? `/profile/readiness`
+        : `/profile/readiness?targetRole=${encodeURIComponent(roleName)}`;
+
+      const skillGapPayload = roleIdNum
+        ? { targetRoleId: roleIdNum }
+        : { targetRole: roleName };
+
       const [newReadiness, newSkillGap] = await Promise.all([
-        apiRequest('/profile/readiness').catch(() => null),
+        apiRequest(readinessUrl).catch(() => null),
         apiRequest('/profile/skill-gap', {
           method: 'POST',
-          body: JSON.stringify({ targetRoleId: roleIdNum }),
+          body: JSON.stringify(skillGapPayload),
         }).catch(() => null),
       ]);
 
@@ -177,10 +206,14 @@ function Dashboard() {
     try {
       const [readinessRes, skillGapRes] = await Promise.all([
         apiRequest('/profile/readiness').catch(() => null),
-        profile?.target_role_id
+        selectedRoleName || profile?.target_role_id
           ? apiRequest('/profile/skill-gap', {
               method: 'POST',
-              body: JSON.stringify({ targetRoleId: profile.target_role_id }),
+              body: JSON.stringify(
+                profile?.target_role_id
+                  ? { targetRoleId: profile.target_role_id }
+                  : { targetRole: selectedRoleName }
+              ),
             }).catch(() => null)
           : null,
       ]);
@@ -203,7 +236,9 @@ function Dashboard() {
     );
   }
 
-  const currentRole = roles.find((r) => Number(r.id) === Number(profile?.target_role_id));
+  const currentRole =
+    roles.find((r) => Number(r.id) === Number(profile?.target_role_id)) ||
+    (selectedRoleName ? { name: selectedRoleName } : null);
   const completenessScore = calculateProfileCompleteness(profile);
   const displayScore = analysis?.readinessScore ?? readinessData?.score ?? null;
 
@@ -239,7 +274,7 @@ function Dashboard() {
           </div>
         )}
 
-        {/* 1b & 1d. Row of 3 Small Summary Stat Cards + Compact Target Role Selector */}
+        {/* 1b & 1d. Row of 3 Small Summary Stat Cards + Compact Target Role Combobox */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
           {/* Stat Card 1: Readiness Score */}
           <div className="bg-white border border-[#E4E1D8] rounded-2xl p-5 flex flex-col justify-between shadow-2xs">
@@ -298,28 +333,27 @@ function Dashboard() {
             </p>
           </div>
 
-          {/* Stat Card 3: Target Role Compact Inline Dropdown */}
+          {/* Stat Card 3: Target Role Compact Combobox */}
           <div className="bg-white border border-[#E4E1D8] rounded-2xl p-5 flex flex-col justify-between shadow-2xs">
             <p className="font-mono text-xs tracking-widest text-[#1F6F5C] uppercase mb-1">
-              TARGET ROLE
+              Your dream role
             </p>
             <div className="my-2">
-              <select
-                value={profile.target_role_id || ''}
-                onChange={(e) => handleTargetRoleChange(e.target.value)}
-                className="w-full text-sm font-medium bg-[#FBFAF6] text-[#12181B] border border-[#D8D5CA] rounded-xl py-2 px-3 focus:outline-none focus:ring-1 focus:ring-[#1F6F5C] cursor-pointer"
-              >
-                <option value="" disabled>
-                  Select target role...
-                </option>
-                {roles.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {r.name}
-                  </option>
-                ))}
-              </select>
+              <Combobox
+                value={selectedRoleName}
+                options={roles}
+                placeholder="Where do you want to end up?"
+                onChange={(val, matchedOpt) => {
+                  handleTargetRoleChange(matchedOpt ? matchedOpt.id : null, val);
+                }}
+              />
             </div>
             <p className="text-xs text-[#5B6670]">Benchmark for role gap analysis</p>
+            {skillGap?.isEstimate && (
+              <p className="text-[10px] text-[#975A16] bg-[#FEF6E6] border border-[#FCE1B3] rounded-md px-2 py-0.5 mt-2">
+                {skillGap.note || `General guidance — we don't have specific data for '${selectedRoleName}' yet.`}
+              </p>
+            )}
           </div>
         </div>
 
