@@ -696,8 +696,10 @@ function Dashboard() {
               skillGap={skillGap}
               targetRole={currentRole}
               roles={roles}
+              analysis={analysis}
               onSelectTargetRole={handleTargetRoleChange}
               onSkillGapUpdated={setSkillGap}
+              onNavigateTab={(tab) => setActiveTab(tab)}
               hasResume={Boolean(analysis)}
             />
           )}
