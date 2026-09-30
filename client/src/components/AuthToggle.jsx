@@ -4,22 +4,26 @@ function AuthToggle() {
   const { pathname } = useLocation();
 
   return (
-    <div className="flex gap-1 bg-[#EFECE2] rounded-lg p-1 mb-8 w-fit mx-auto">
+    <div className="grid grid-cols-2 bg-zinc-100 p-1 rounded-lg border border-zinc-200/80 mb-6 text-center">
       <Link
         to="/login"
-        className={`px-5 py-2 rounded-md text-sm font-medium transition ${
-          pathname === '/login' ? 'bg-white shadow-sm text-[#12181B]' : 'text-[#5B6670]'
+        className={`py-1.5 rounded-md text-xs font-medium transition cursor-pointer ${
+          pathname === '/login'
+            ? 'bg-white shadow-xs text-zinc-900 font-semibold'
+            : 'text-zinc-500 hover:text-zinc-900'
         }`}
       >
         Sign in
       </Link>
       <Link
         to="/register"
-        className={`px-5 py-2 rounded-md text-sm font-medium transition ${
-          pathname === '/register' ? 'bg-white shadow-sm text-[#12181B]' : 'text-[#5B6670]'
+        className={`py-1.5 rounded-md text-xs font-medium transition cursor-pointer ${
+          pathname === '/register'
+            ? 'bg-white shadow-xs text-zinc-900 font-semibold'
+            : 'text-zinc-500 hover:text-zinc-900'
         }`}
       >
-        Sign up
+        Create account
       </Link>
     </div>
   );

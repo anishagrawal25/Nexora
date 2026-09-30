@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import { apiRequest } from '../api';
 import AuthToggle from '../components/AuthToggle';
 import AuthLayout from '../components/AuthLayout';
 import PasswordInput from '../components/PasswordInput';
 import { validateEmail } from '../utils/validateEmail';
-
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -39,39 +39,57 @@ function Login() {
   return (
     <AuthLayout>
       <AuthToggle />
-      <div className="bg-white border border-[#E4E1D8] rounded-2xl p-10 relative overflow-hidden">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-[#1F6F5C]" />
-        <p className="font-mono text-xs tracking-widest text-[#1F6F5C] mb-1">SIGN IN</p>
-        <h1 className="italic text-3xl text-[#12181B] mb-1" style={{ fontFamily: "'Fraunces', serif" }}>
-          Welcome back.
-        </h1>
-        <p className="text-sm text-[#5B6670] mb-8">Pick up right where your readiness score left off.</p>
+      <div className="bg-white border border-zinc-200 rounded-xl p-7 sm:p-8 shadow-xs">
+        <div className="mb-6">
+          <h1 className="text-xl font-semibold text-zinc-900 tracking-tight">
+            Sign In
+          </h1>
+          <p className="text-xs text-zinc-500 mt-1">
+            Access your readiness scorecard and skill gap analysis.
+          </p>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-[#5B6670] mb-1.5">Email</label>
+            <label className="block text-xs font-medium text-zinc-700 mb-1">
+              Email Address
+            </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               placeholder="you@college.edu"
-              className="w-full border border-[#D8D5CA] rounded-lg px-3.5 py-2.5 text-sm bg-[#FBFAF6] focus:outline-none focus:border-[#1F6F5C]"
+              className="w-full bg-white border border-zinc-200 text-zinc-900 placeholder:text-zinc-400 rounded-lg px-3 py-2 text-xs sm:text-sm font-normal shadow-xs focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition"
             />
           </div>
+
           <div>
-            <label className="block text-xs font-medium text-[#5B6670] mb-1.5">Password</label>
+            <label className="block text-xs font-medium text-zinc-700 mb-1">
+              Password
+            </label>
             <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && (
+            <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700">
+              {error}
+            </div>
+          )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#1F6F5C] text-white rounded-lg py-3 text-sm font-medium hover:bg-[#195A4A] transition disabled:opacity-60"
+            className="w-full bg-zinc-900 text-white rounded-lg py-2.5 text-xs sm:text-sm font-medium hover:bg-zinc-800 transition disabled:opacity-50 inline-flex items-center justify-center gap-2 shadow-xs cursor-pointer mt-2"
           >
-            {loading ? 'Logging in...' : 'Log in'}
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin text-zinc-400" />
+                <span>Signing in...</span>
+              </>
+            ) : (
+              'Sign In'
+            )}
           </button>
         </form>
       </div>

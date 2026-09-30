@@ -4,7 +4,7 @@ import { ChevronDown, Check, Sparkles } from 'lucide-react';
 /**
  * Reusable Combobox Component
  * Allows free-form typing or picking from a filtered suggestion list.
- * Styled with Nexora's warm editorial design tokens.
+ * Styled with clean, modern SaaS design tokens.
  *
  * @param {string} value - Current value (string)
  * @param {function} onChange - Callback (newValue, selectedOptionObjectOrNull) => void
@@ -61,7 +61,6 @@ function Combobox({
       if (containerRef.current && !containerRef.current.contains(e.target)) {
         if (isOpen) {
           setIsOpen(false);
-          // Commit current typed input on blur if different
           if (inputValue !== value && onChange) {
             const matched = normalizedOptions.find(
               (opt) => opt.name.toLowerCase() === inputValue.trim().toLowerCase()
@@ -152,7 +151,7 @@ function Combobox({
           onKeyDown={handleKeyDown}
           disabled={disabled}
           placeholder={placeholder}
-          className={`w-full border border-[#D8D5CA] rounded-xl px-3.5 py-2.5 pr-9 text-sm bg-[#FBFAF6] text-[#12181B] placeholder-[#5B6670] focus:outline-none focus:border-[#1F6F5C] focus:ring-1 focus:ring-[#1F6F5C] transition disabled:opacity-60 disabled:cursor-not-allowed ${inputClassName}`}
+          className={`w-full bg-white border border-zinc-200 text-zinc-900 placeholder:text-zinc-400 rounded-lg px-3 py-2 pr-8 text-xs sm:text-sm font-normal shadow-xs focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition disabled:bg-zinc-50 disabled:text-zinc-400 disabled:cursor-not-allowed ${inputClassName}`}
         />
         <button
           type="button"
@@ -160,11 +159,11 @@ function Combobox({
           disabled={disabled}
           tabIndex={-1}
           aria-label="Toggle options list"
-          className="absolute right-2.5 p-1 text-[#5B6670] hover:text-[#12181B] transition cursor-pointer disabled:cursor-not-allowed"
+          className="absolute right-2 p-1 text-zinc-400 hover:text-zinc-700 transition cursor-pointer disabled:cursor-not-allowed"
         >
           <ChevronDown
-            className={`w-4 h-4 transition-transform duration-150 ${
-              isOpen ? 'rotate-180 text-[#1F6F5C]' : ''
+            className={`w-3.5 h-3.5 transition-transform duration-150 ${
+              isOpen ? 'rotate-180 text-zinc-900' : ''
             }`}
           />
         </button>
@@ -172,48 +171,50 @@ function Combobox({
 
       {/* Dropdown Menu Overlay */}
       {isOpen && !disabled && (
-        <div className="absolute z-50 left-0 right-0 mt-1 bg-white border border-[#E4E1D8] rounded-xl shadow-lg max-h-60 overflow-y-auto py-1">
-          {filteredOptions.length > 0 ? (
-            filteredOptions.map((opt, index) => {
-              const isSelected =
-                inputValue.trim().toLowerCase() === opt.name.toLowerCase();
-              const isHighlighted = index === highlightedIndex;
+        <div className="absolute z-50 left-0 right-0 mt-1.5 bg-white border border-zinc-200 rounded-lg shadow-lg max-h-56 overflow-y-auto py-1 divide-y divide-zinc-100">
+          <div className="p-1 space-y-0.5">
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((opt, index) => {
+                const isSelected =
+                  inputValue.trim().toLowerCase() === opt.name.toLowerCase();
+                const isHighlighted = index === highlightedIndex;
 
-              return (
-                <button
-                  key={opt.id || opt.name}
-                  type="button"
-                  onClick={() => handleSelectOption(opt)}
-                  onMouseEnter={() => setHighlightedIndex(index)}
-                  className={`w-full text-left px-3.5 py-2.5 text-xs sm:text-sm flex items-center justify-between transition cursor-pointer ${
-                    isHighlighted ? 'bg-[#F4F2EB]' : 'bg-transparent'
-                  } ${isSelected ? 'text-[#1F6F5C] font-semibold bg-[#EFECE2]/70' : 'text-[#12181B]'}`}
-                >
-                  <span className="truncate">{opt.name}</span>
-                  {isSelected && <Check className="w-4 h-4 text-[#1F6F5C] shrink-0 ml-2" />}
-                </button>
-              );
-            })
-          ) : (
-            <div className="px-3.5 py-3 text-xs text-[#5B6670] flex items-center justify-between">
-              <span>No seeded matches found</span>
-            </div>
-          )}
+                return (
+                  <button
+                    key={opt.id || opt.name}
+                    type="button"
+                    onClick={() => handleSelectOption(opt)}
+                    onMouseEnter={() => setHighlightedIndex(index)}
+                    className={`w-full text-left px-2.5 py-1.5 text-xs sm:text-sm rounded-md flex items-center justify-between transition cursor-pointer ${
+                      isHighlighted ? 'bg-zinc-100 text-zinc-900' : 'text-zinc-700'
+                    } ${isSelected ? 'font-medium bg-zinc-100 text-zinc-900' : ''}`}
+                  >
+                    <span className="truncate">{opt.name}</span>
+                    {isSelected && <Check className="w-3.5 h-3.5 text-zinc-900 shrink-0 ml-2" />}
+                  </button>
+                );
+              })
+            ) : (
+              <div className="px-3 py-2 text-xs text-zinc-500">
+                No matching suggestions
+              </div>
+            )}
+          </div>
 
-          {/* Custom typed option prompt if user entered text that is not an exact match */}
+          {/* Custom typed option prompt */}
           {inputValue.trim() && !exactMatch && (
-            <div className="border-t border-[#E4E1D8] mt-1 pt-1 px-1">
+            <div className="p-1">
               <button
                 type="button"
                 onClick={() => {
                   setIsOpen(false);
                   if (onChange) onChange(inputValue, null);
                 }}
-                className="w-full text-left px-3 py-2 text-xs rounded-lg bg-[#FBFAF6] hover:bg-[#F4F2EB] text-[#1F6F5C] font-medium flex items-center gap-1.5 transition cursor-pointer"
+                className="w-full text-left px-2.5 py-1.5 text-xs rounded-md bg-zinc-50 hover:bg-zinc-100 text-zinc-900 font-medium flex items-center gap-1.5 transition cursor-pointer"
               >
-                <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                <Sparkles className="w-3 h-3 text-zinc-500 shrink-0" />
                 <span className="truncate">
-                  Use custom: <strong>&quot;{inputValue.trim()}&quot;</strong> (with fallback guidance)
+                  Custom: <strong>&quot;{inputValue.trim()}&quot;</strong> (estimate guidance)
                 </span>
               </button>
             </div>
@@ -225,3 +226,4 @@ function Combobox({
 }
 
 export default Combobox;
+

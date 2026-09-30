@@ -5,7 +5,7 @@
   "description": "Nexora - Career Readiness & Skill Gap Platform",
   "scripts": {
     "test": "npm --prefix server test",
-    "build": "npm --prefix client build",
+    "build": "npm --prefix client run build",
     "start": "npm --prefix server start",
     "dev:server": "npm --prefix server dev",
     "dev:client": "npm --prefix client dev"
