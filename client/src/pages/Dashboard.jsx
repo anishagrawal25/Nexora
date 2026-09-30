@@ -39,6 +39,13 @@ function calculateProfileCompleteness(profile) {
   return Math.round((filled / fields.length) * 100);
 }
 
+const POPULAR_ROLES = [
+  'Full Stack Developer',
+  'Frontend Developer',
+  'Backend Developer',
+  'Data Analyst',
+];
+
 function Dashboard() {
   const [profile, setProfile] = useState(null);
   const [roles, setRoles] = useState([]);
@@ -292,7 +299,7 @@ function Dashboard() {
       {/* Main Content Area */}
       <main className="max-w-5xl mx-auto px-6 py-8 w-full flex-1">
         {/* Page Title & Status */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-6 mb-6 border-b border-zinc-200">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-6 mb-6 border-b border-slate-200">
           <div>
             <h1 className="text-xl sm:text-2xl font-semibold text-zinc-900 tracking-tight">
               Welcome back, {profile.name}
@@ -302,14 +309,13 @@ function Dashboard() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2 self-start sm:self-auto">
-            <span className="text-[11px] font-mono px-2 py-1 rounded bg-zinc-100 border border-zinc-200 text-zinc-700">
-              Graduation: <strong>{profile.grad_year || 'Not Set'}</strong>
-            </span>
-            <span className="text-[11px] font-mono px-2 py-1 rounded bg-zinc-100 border border-zinc-200 text-zinc-700">
-              CGPA: <strong>{profile.cgpa || 'Not Set'}</strong>
-            </span>
-          </div>
+          <button
+            onClick={() => setIsEditingProfile(!isEditingProfile)}
+            className="text-xs font-medium text-zinc-700 hover:text-indigo-600 bg-white border border-slate-200 hover:border-indigo-200 px-3 py-1.5 rounded-lg transition shadow-xs inline-flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+          >
+            <Edit2 className="w-3.5 h-3.5 text-zinc-400" />
+            <span>{isEditingProfile ? 'Close Editor' : 'Edit Academic Profile'}</span>
+          </button>
         </div>
 
         {error && (
@@ -321,14 +327,20 @@ function Dashboard() {
         {/* Row of 3 Summary Stat Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           {/* Stat Card 1: Readiness Score */}
-          <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-xs flex flex-col justify-between">
+          <div className="bg-white border border-slate-200/90 rounded-xl p-5 shadow-xs hover:shadow-sm transition-shadow flex flex-col justify-between">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-mono tracking-wider text-zinc-500 uppercase font-medium">
                 READINESS SCORE
               </span>
-              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-600 border border-zinc-200">
-                Formula
-              </span>
+              {displayScore !== null ? (
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium">
+                  Live Index
+                </span>
+              ) : (
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 font-medium">
+                  Awaiting Resume
+                </span>
+              )}
             </div>
             <div className="my-3 flex items-baseline gap-1.5">
               {displayScore !== null ? (
@@ -339,61 +351,116 @@ function Dashboard() {
                   <span className="text-xs font-mono text-zinc-400">/100</span>
                 </>
               ) : (
-                <span className="text-2xl text-zinc-400 font-mono">—</span>
+                <>
+                  <span className="text-3xl font-semibold font-mono text-zinc-300 tracking-tight">
+                    --
+                  </span>
+                  <span className="text-xs font-mono text-zinc-400">/100</span>
+                </>
               )}
             </div>
-            <p className="text-xs text-zinc-500">
-              {displayScore !== null ? 'Multi-factor weighted index' : 'Upload resume to calculate'}
+            <p className="text-xs text-zinc-500 leading-relaxed">
+              {displayScore !== null
+                ? 'Multi-factor weighted benchmark index'
+                : 'Upload your resume to calculate your live AI benchmark score against top tech roles.'}
             </p>
           </div>
 
           {/* Stat Card 2: Profile Completeness */}
-          <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-xs flex flex-col justify-between">
+          <div className="bg-white border border-slate-200/90 rounded-xl p-5 shadow-xs hover:shadow-sm transition-shadow flex flex-col justify-between">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-mono tracking-wider text-zinc-500 uppercase font-medium">
                 COMPLETENESS
               </span>
               <button
                 onClick={() => setIsEditingProfile(!isEditingProfile)}
-                className="text-xs text-zinc-700 hover:text-zinc-900 font-medium hover:underline inline-flex items-center gap-1 cursor-pointer"
+                className="text-xs text-indigo-600 hover:text-indigo-800 font-medium inline-flex items-center gap-1 cursor-pointer"
               >
                 <Edit2 className="w-3 h-3" />
                 <span>{isEditingProfile ? 'Close' : 'Edit info'}</span>
               </button>
             </div>
-            <div className="my-3 flex items-baseline gap-1.5">
+            <div className="my-2.5 flex items-baseline gap-1.5">
               <span className="text-3xl font-semibold font-mono text-zinc-900 tracking-tight">
                 {completenessScore}%
               </span>
             </div>
-            <p className="text-xs text-zinc-500">
-              {profile.cgpa ? `CGPA ${profile.cgpa}` : 'CGPA missing'} •{' '}
-              {profile.grad_year ? `Batch ${profile.grad_year}` : 'Batch missing'}
-            </p>
+            <div className="flex flex-wrap items-center gap-1.5 pt-1">
+              {profile.cgpa ? (
+                <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-100 text-zinc-700 border border-slate-200">
+                  CGPA: <strong>{profile.cgpa}</strong>
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsEditingProfile(true)}
+                  className="text-[11px] font-mono px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 transition cursor-pointer"
+                >
+                  + Set CGPA
+                </button>
+              )}
+              {profile.grad_year ? (
+                <span className="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-100 text-zinc-700 border border-slate-200">
+                  Batch: <strong>{profile.grad_year}</strong>
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsEditingProfile(true)}
+                  className="text-[11px] font-mono px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 transition cursor-pointer"
+                >
+                  + Set Batch
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Stat Card 3: Target Role Compact Combobox */}
-          <div className="bg-white border border-zinc-200 rounded-xl p-5 shadow-xs flex flex-col justify-between">
-            <span className="text-[11px] font-mono tracking-wider text-zinc-500 uppercase font-medium mb-1">
-              Your dream role
-            </span>
-            <div className="my-1.5">
+          <div className="bg-white border border-slate-200/90 rounded-xl p-5 shadow-xs hover:shadow-sm transition-shadow flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[11px] font-mono tracking-wider text-zinc-500 uppercase font-medium">
+                TARGET ROLE
+              </span>
+              {skillGap?.isEstimate ? (
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-50 text-amber-900 border border-amber-200">
+                  Heuristic
+                </span>
+              ) : (
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 text-zinc-600 border border-slate-200">
+                  Benchmark
+                </span>
+              )}
+            </div>
+            <div className="my-1">
               <Combobox
                 value={selectedRoleName}
                 options={roles}
-                placeholder="Where do you want to end up?"
+                placeholder="Type or pick target role..."
                 onChange={(val, matchedOpt) => {
                   handleTargetRoleChange(matchedOpt ? matchedOpt.id : null, val);
                 }}
               />
             </div>
-            <div className="flex items-center justify-between mt-1">
-              <p className="text-xs text-zinc-500">Benchmark for gap matrix</p>
-              {skillGap?.isEstimate && (
-                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-200">
-                  Estimate
-                </span>
-              )}
+            <div className="mt-2 flex items-center gap-1.5 flex-wrap">
+              <span className="text-[10px] font-mono text-zinc-400">Popular:</span>
+              {POPULAR_ROLES.map((roleName) => {
+                const isSelected = selectedRoleName?.toLowerCase() === roleName.toLowerCase();
+                const matched = roles.find((r) => r.name.toLowerCase() === roleName.toLowerCase());
+                return (
+                  <button
+                    key={roleName}
+                    type="button"
+                    onClick={() => handleTargetRoleChange(matched ? matched.id : null, roleName)}
+                    className={`text-[10px] px-2 py-0.5 rounded transition cursor-pointer font-medium ${
+                      isSelected
+                        ? 'bg-indigo-600 text-white shadow-xs'
+                        : 'bg-slate-100 text-zinc-700 hover:bg-indigo-50 hover:text-indigo-700 border border-slate-200/80'
+                    }`}
+                  >
+                    {roleName}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -496,7 +563,7 @@ function Dashboard() {
                 <button
                   type="submit"
                   disabled={savingProfile}
-                  className="bg-zinc-900 text-white text-xs font-medium px-4 py-2 rounded-lg hover:bg-zinc-800 transition disabled:opacity-50 cursor-pointer shadow-xs"
+                  className="bg-indigo-600 text-white text-xs font-semibold px-5 py-2 rounded-lg hover:bg-indigo-700 active:bg-indigo-800 transition disabled:opacity-50 cursor-pointer shadow-sm shadow-indigo-100"
                 >
                   {savingProfile ? 'Saving Changes...' : 'Save Profile'}
                 </button>
@@ -513,7 +580,7 @@ function Dashboard() {
         )}
 
         {/* Tabbed Navigation: "Resume" | "Skill Gap" | "Eligibility" | "Recommendations" */}
-        <div className="border-b border-zinc-200 mb-6">
+        <div className="border-b border-slate-200 mb-6">
           <nav className="flex space-x-6 sm:space-x-8" aria-label="Tabs">
             {tabs.map((tab) => {
               const isActive = activeTab === tab.id;
@@ -524,11 +591,11 @@ function Dashboard() {
                   onClick={() => setActiveTab(tab.id)}
                   className={`pb-3 text-xs sm:text-sm font-medium transition cursor-pointer border-b-2 -mb-px inline-flex items-center gap-2 ${
                     isActive
-                      ? 'border-zinc-900 text-zinc-900 font-semibold'
-                      : 'border-transparent text-zinc-500 hover:text-zinc-800 hover:border-zinc-300'
+                      ? 'border-indigo-600 text-indigo-600 font-semibold'
+                      : 'border-transparent text-zinc-500 hover:text-zinc-900 hover:border-slate-300'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-zinc-900' : 'text-zinc-400'}`} />
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-indigo-600' : 'text-zinc-400'}`} />
                   <span>{tab.label}</span>
                 </button>
               );
@@ -557,39 +624,53 @@ function Dashboard() {
                 </div>
               ) : (
                 /* AI Analysis Structured Display */
-                <div className="bg-white border border-zinc-200 rounded-xl p-6 sm:p-7 shadow-xs">
+                <div className="bg-white border border-slate-200/90 rounded-xl p-6 sm:p-7 shadow-xs">
                   {/* Header Row */}
-                  <div className="flex items-center justify-between pb-5 border-b border-zinc-200 mb-5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-slate-200 mb-6">
                     <div>
-                      <span className="text-[11px] font-mono tracking-wider text-zinc-500 uppercase font-medium">
-                        AI RESUME ANALYSIS
+                      <span className="text-[11px] font-mono tracking-wider text-indigo-600 uppercase font-semibold">
+                        AI RESUME EXTRACTION & AUDIT
                       </span>
                       <h2 className="text-lg sm:text-xl font-semibold text-zinc-900 tracking-tight mt-0.5">
                         Structured Resume Feedback
                       </h2>
                     </div>
 
-                    <button
-                      onClick={() => setIsUploadingAnother(true)}
-                      className="text-xs font-medium text-zinc-700 hover:text-zinc-900 border border-zinc-200 rounded-lg px-3.5 py-1.5 hover:bg-zinc-50 transition cursor-pointer shadow-xs"
-                    >
-                      Upload new PDF
-                    </button>
+                    <div className="flex items-center gap-2 self-start sm:self-auto">
+                      <button
+                        onClick={() => setIsUploadingAnother(true)}
+                        className="text-xs font-medium text-zinc-700 hover:text-zinc-900 border border-slate-200 rounded-lg px-3.5 py-1.5 hover:bg-slate-50 transition cursor-pointer shadow-xs"
+                      >
+                        Upload new PDF
+                      </button>
+                      <button
+                        onClick={() => setActiveTab('skill-gap')}
+                        className="text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg px-4 py-1.5 transition cursor-pointer shadow-sm shadow-indigo-100 inline-flex items-center gap-1.5"
+                      >
+                        <span>View Skill Gaps</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
 
                   {/* Prominent Readiness Score Card */}
-                  <div className="p-4 rounded-lg bg-zinc-50/70 border border-zinc-200/80 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="p-4 sm:p-5 rounded-xl bg-slate-50 border border-slate-200/80 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                      <p className="text-xs font-semibold text-zinc-900">
-                        Overall Resume Quality Score
-                      </p>
-                      <p className="text-xs text-zinc-500 mt-0.5">
-                        Evaluated across technical skill breadth, bullet impact, and structural depth.
+                      <div className="flex items-center gap-2">
+                        <p className="text-xs font-semibold text-zinc-900">
+                          Resume Technical Quality Index
+                        </p>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium">
+                          Evaluated
+                        </span>
+                      </div>
+                      <p className="text-xs text-zinc-500 mt-1 max-w-lg">
+                        Evaluated across technical skill breadth, bullet impact, and structural depth against standard software roles.
                       </p>
                     </div>
 
-                    <div className="flex items-baseline gap-1 bg-white px-3.5 py-1.5 rounded-lg border border-zinc-200 shadow-xs self-start sm:self-auto">
-                      <span className="text-2xl font-semibold font-mono text-zinc-900">
+                    <div className="flex items-baseline gap-1 bg-white px-4 py-2 rounded-lg border border-slate-200 shadow-xs self-start sm:self-auto">
+                      <span className="text-2xl sm:text-3xl font-semibold font-mono text-indigo-600">
                         {analysis.readinessScore ?? 0}
                       </span>
                       <span className="text-xs font-mono text-zinc-400">/100</span>
@@ -598,15 +679,15 @@ function Dashboard() {
 
                   {/* Skills Tag Pills */}
                   <div className="mb-6">
-                    <h3 className="text-xs font-mono tracking-wider text-zinc-500 uppercase font-medium mb-2.5">
-                      Extracted Technical Skills ({analysis.extractedSkills?.length || 0})
+                    <h3 className="text-xs font-mono tracking-wider text-zinc-500 uppercase font-semibold mb-2.5">
+                      Extracted Technical Competencies ({analysis.extractedSkills?.length || 0})
                     </h3>
                     <div className="flex flex-wrap gap-1.5">
                       {analysis.extractedSkills && analysis.extractedSkills.length > 0 ? (
                         analysis.extractedSkills.map((skill) => (
                           <span
                             key={skill}
-                            className="text-xs font-medium bg-zinc-100 text-zinc-800 border border-zinc-200/80 rounded-md px-2.5 py-1"
+                            className="text-xs font-medium bg-slate-100 text-zinc-800 border border-slate-200 rounded-md px-2.5 py-1"
                           >
                             {skill}
                           </span>
@@ -620,7 +701,7 @@ function Dashboard() {
                   {/* Strengths & Suggestions Grid */}
                   <div className="grid md:grid-cols-2 gap-4 mb-5">
                     {/* Strengths */}
-                    <div className="p-4 rounded-lg bg-zinc-50/50 border border-zinc-200">
+                    <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-200">
                       <div className="flex items-center gap-2 mb-2.5">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
                         <h4 className="text-xs font-semibold text-zinc-900 uppercase tracking-wider">
@@ -631,7 +712,7 @@ function Dashboard() {
                         {analysis.strengths && analysis.strengths.length > 0 ? (
                           analysis.strengths.map((s, i) => (
                             <li key={i} className="leading-relaxed flex items-start gap-2">
-                              <span className="text-zinc-400 mt-0.5">•</span>
+                              <span className="text-emerald-500 mt-0.5">•</span>
                               <span>{s}</span>
                             </li>
                           ))
@@ -642,9 +723,9 @@ function Dashboard() {
                     </div>
 
                     {/* Suggestions */}
-                    <div className="p-4 rounded-lg bg-zinc-50/50 border border-zinc-200">
+                    <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-200">
                       <div className="flex items-center gap-2 mb-2.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-zinc-700" />
+                        <span className="w-1.5 h-1.5 rounded-full bg-indigo-600" />
                         <h4 className="text-xs font-semibold text-zinc-900 uppercase tracking-wider">
                           Actionable Improvements
                         </h4>
@@ -653,7 +734,7 @@ function Dashboard() {
                         {analysis.suggestions && analysis.suggestions.length > 0 ? (
                           analysis.suggestions.map((s, i) => (
                             <li key={i} className="leading-relaxed flex items-start gap-2">
-                              <span className="text-zinc-400 mt-0.5">•</span>
+                              <span className="text-indigo-500 mt-0.5">•</span>
                               <span>{s}</span>
                             </li>
                           ))
@@ -665,10 +746,10 @@ function Dashboard() {
                   </div>
 
                   {/* Areas for Development */}
-                  <div className="p-4 rounded-lg bg-zinc-50/50 border border-zinc-200">
+                  <div className="p-4 rounded-xl bg-slate-50/70 border border-slate-200">
                     <div className="flex items-center gap-2 mb-2.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
-                      <h4 className="text-xs font-semibold text-zinc-600 uppercase tracking-wider">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                      <h4 className="text-xs font-semibold text-zinc-700 uppercase tracking-wider">
                         Areas for Development
                       </h4>
                     </div>
@@ -676,7 +757,7 @@ function Dashboard() {
                       {analysis.weaknesses && analysis.weaknesses.length > 0 ? (
                         analysis.weaknesses.map((w, i) => (
                           <li key={i} className="leading-relaxed flex items-start gap-2">
-                            <span className="text-zinc-400 mt-0.5">•</span>
+                            <span className="text-amber-500 mt-0.5">•</span>
                             <span>{w}</span>
                           </li>
                         ))

@@ -151,7 +151,7 @@ function Combobox({
           onKeyDown={handleKeyDown}
           disabled={disabled}
           placeholder={placeholder}
-          className={`w-full bg-white border border-zinc-200 text-zinc-900 placeholder:text-zinc-400 rounded-lg px-3 py-2 pr-8 text-xs sm:text-sm font-normal shadow-xs focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition disabled:bg-zinc-50 disabled:text-zinc-400 disabled:cursor-not-allowed ${inputClassName}`}
+          className={`w-full bg-white border border-zinc-200 text-zinc-900 placeholder:text-zinc-400 rounded-lg px-3 py-2 pr-8 text-xs sm:text-sm font-normal shadow-xs focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-500/20 transition disabled:bg-zinc-50 disabled:text-zinc-400 disabled:cursor-not-allowed ${inputClassName}`}
         />
         <button
           type="button"
@@ -163,7 +163,7 @@ function Combobox({
         >
           <ChevronDown
             className={`w-3.5 h-3.5 transition-transform duration-150 ${
-              isOpen ? 'rotate-180 text-zinc-900' : ''
+              isOpen ? 'rotate-180 text-indigo-600' : ''
             }`}
           />
         </button>
@@ -186,11 +186,11 @@ function Combobox({
                     onClick={() => handleSelectOption(opt)}
                     onMouseEnter={() => setHighlightedIndex(index)}
                     className={`w-full text-left px-2.5 py-1.5 text-xs sm:text-sm rounded-md flex items-center justify-between transition cursor-pointer ${
-                      isHighlighted ? 'bg-zinc-100 text-zinc-900' : 'text-zinc-700'
-                    } ${isSelected ? 'font-medium bg-zinc-100 text-zinc-900' : ''}`}
+                      isHighlighted ? 'bg-indigo-50/70 text-indigo-950' : 'text-zinc-700'
+                    } ${isSelected ? 'font-medium bg-indigo-50 text-indigo-900' : ''}`}
                   >
                     <span className="truncate">{opt.name}</span>
-                    {isSelected && <Check className="w-3.5 h-3.5 text-zinc-900 shrink-0 ml-2" />}
+                    {isSelected && <Check className="w-3.5 h-3.5 text-indigo-600 shrink-0 ml-2" />}
                   </button>
                 );
               })
