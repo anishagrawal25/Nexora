@@ -15,6 +15,14 @@ const skillGapSchema = new mongoose.Schema({
     type: Map,
     of: String, // e.g. { "Docker": "High", "Redis": "Medium" }
   },
+  isEstimate: {
+    type: Boolean,
+    default: false,
+  },
+  note: {
+    type: String,
+    default: null,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
@@ -45,6 +53,8 @@ class SkillGapProxy {
       _id: "sg_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
       missingSkills: [],
       priority: {},
+      isEstimate: Boolean(data.isEstimate),
+      note: data.note || null,
       createdAt: new Date(),
       ...data,
       userId: Number(data.userId),

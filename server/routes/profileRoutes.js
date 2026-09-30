@@ -10,6 +10,8 @@ const {
   findResource,
   getPriorityByIndex,
   normalizeSkill,
+  getRoleFallback,
+  getCompanyFallback,
 } = require("../utils/pureFunctions");
 
 const router = Router();
@@ -127,6 +129,8 @@ router.get(
   "/readiness",
   requireAuth,
   asyncHandler(async (req, res) => {
+    const targetRoleQuery = req.query.targetRole || req.query.role || req.query.targetRoleId;
+
     const userResult = await pgPool.query(
       `SELECT id, name, email, cgpa, grad_year, github_url, linkedin_url, portfolio_url, target_role_id
        FROM users WHERE id = $1`,
@@ -141,17 +145,44 @@ router.get(
     const latestAnalysis = await getLatestAnalyzedResume(req.user.id);
     let expectedSkills = [];
     let targetRoleName = null;
+    let isEstimate = false;
+    let estimateNote = null;
 
-    if (user.target_role_id) {
-      const roleResult = await pgPool.query(
-        "SELECT id, name, expected_skills FROM target_roles WHERE id = $1",
-        [user.target_role_id]
-      );
-      if (roleResult.rows[0]) {
-        targetRoleName = roleResult.rows[0].name;
-        expectedSkills = Array.isArray(roleResult.rows[0].expected_skills)
-          ? roleResult.rows[0].expected_skills
-          : [];
+    const roleToResolve = targetRoleQuery !== undefined && targetRoleQuery !== null && String(targetRoleQuery).trim() !== ""
+      ? targetRoleQuery
+      : user.target_role_id;
+
+    if (roleToResolve) {
+      const isNumeric = !isNaN(Number(roleToResolve)) && typeof roleToResolve !== "boolean";
+      let roleRow = null;
+
+      if (isNumeric) {
+        const roleResult = await pgPool.query(
+          "SELECT id, name, expected_skills FROM target_roles WHERE id = $1",
+          [Number(roleToResolve)]
+        );
+        roleRow = roleResult.rows[0];
+      }
+
+      if (!roleRow && typeof roleToResolve === "string") {
+        const roleResult = await pgPool.query(
+          "SELECT id, name, expected_skills FROM target_roles WHERE LOWER(name) = LOWER($1)",
+          [roleToResolve.trim()]
+        );
+        roleRow = roleResult.rows[0];
+      }
+
+      if (roleRow) {
+        targetRoleName = roleRow.name;
+        expectedSkills = Array.isArray(roleRow.expected_skills) ? roleRow.expected_skills : [];
+        isEstimate = false;
+        estimateNote = null;
+      } else {
+        const fallback = getRoleFallback(roleToResolve);
+        targetRoleName = fallback.name;
+        expectedSkills = fallback.expected_skills;
+        isEstimate = true;
+        estimateNote = fallback.note;
       }
     }
 
@@ -169,19 +200,21 @@ router.get(
         target_role_name: targetRoleName,
       },
       latestAnalysis,
+      isEstimate,
+      note: estimateNote,
     });
   })
 );
 
 // -------------------------------------------------------------
-// ELIGIBILITY ENDPOINT
+// ELIGIBILITY ENDPOINT (Accepts company ID or company Name)
 // -------------------------------------------------------------
 
 router.get(
   "/eligibility",
   requireAuth,
   asyncHandler(async (req, res) => {
-    const companyId = req.query.companyId || req.query.company_id;
+    const companyParam = req.query.company || req.query.companyName || req.query.companyId || req.query.company_id;
 
     const userResult = await pgPool.query(
       `SELECT id, name, cgpa, grad_year FROM users WHERE id = $1`,
@@ -198,51 +231,103 @@ router.get(
       ? latestAnalysis.extractedSkills
       : [];
 
-    if (companyId) {
-      const criteriaResult = await pgPool.query(
-        `SELECT c.id AS company_id, c.name AS company_name, e.min_cgpa, e.min_grad_year, e.required_skills
-         FROM companies c
-         LEFT JOIN eligibility_criteria e ON e.company_id = c.id
-         WHERE c.id = $1`,
-        [companyId]
-      );
+    if (companyParam !== undefined && companyParam !== null && String(companyParam).trim() !== "") {
+      const trimmedParam = String(companyParam).trim();
+      const isNumeric = !isNaN(Number(trimmedParam)) && !/^[a-zA-Z\s]+$/.test(trimmedParam);
 
-      const criteria = criteriaResult.rows[0];
-      if (!criteria) {
-        throw new AppError("Company not found", 404);
+      let criteria = null;
+
+      if (isNumeric) {
+        const criteriaResult = await pgPool.query(
+          `SELECT c.id AS company_id, c.name AS company_name, e.min_cgpa, e.min_grad_year, e.required_skills
+           FROM companies c
+           LEFT JOIN eligibility_criteria e ON e.company_id = c.id
+           WHERE c.id = $1`,
+          [Number(trimmedParam)]
+        );
+        criteria = criteriaResult.rows[0];
       }
 
-      const requiredSkills = Array.isArray(criteria.required_skills) ? criteria.required_skills : [];
+      if (!criteria) {
+        const criteriaResult = await pgPool.query(
+          `SELECT c.id AS company_id, c.name AS company_name, e.min_cgpa, e.min_grad_year, e.required_skills
+           FROM companies c
+           LEFT JOIN eligibility_criteria e ON e.company_id = c.id
+           WHERE LOWER(c.name) = LOWER($1)`,
+          [trimmedParam]
+        );
+        criteria = criteriaResult.rows[0];
+      }
+
+      // Case 1: Exact match found in seeded companies
+      if (criteria) {
+        const requiredSkills = Array.isArray(criteria.required_skills) ? criteria.required_skills : [];
+        const missingSkills = requiredSkills.filter(
+          (skill) => !userSkills.some((item) => normalizeSkill(item) === normalizeSkill(skill))
+        );
+
+        const meetsCgpa =
+          user.cgpa !== null && user.cgpa !== undefined && criteria.min_cgpa !== null && criteria.min_cgpa !== undefined
+            ? Number(user.cgpa) >= Number(criteria.min_cgpa)
+            : false;
+
+        const meetsGradYear =
+          user.grad_year !== null && user.grad_year !== undefined && criteria.min_grad_year !== null && criteria.min_grad_year !== undefined
+            ? Number(user.grad_year) >= Number(criteria.min_grad_year)
+            : false;
+
+        const isEligible = meetsCgpa && meetsGradYear && missingSkills.length === 0;
+
+        return res.status(200).json({
+          company: criteria.company_name,
+          companyId: criteria.company_id ? Number(criteria.company_id) : null,
+          eligible: isEligible,
+          meetsCgpa,
+          meetsGradYear,
+          missingSkills,
+          requiredSkills,
+          minimumCgpa: criteria.min_cgpa,
+          minimumGradYear: criteria.min_grad_year,
+          isEstimate: false,
+          note: null,
+        });
+      }
+
+      // Case 2: No exact match found -> Use heuristic fallback
+      const fallback = getCompanyFallback(trimmedParam);
+      const requiredSkills = fallback.requiredSkills;
       const missingSkills = requiredSkills.filter(
         (skill) => !userSkills.some((item) => normalizeSkill(item) === normalizeSkill(skill))
       );
 
       const meetsCgpa =
-        user.cgpa !== null && user.cgpa !== undefined && criteria.min_cgpa
-          ? Number(user.cgpa) >= Number(criteria.min_cgpa)
+        user.cgpa !== null && user.cgpa !== undefined
+          ? Number(user.cgpa) >= Number(fallback.minimumCgpa)
           : false;
 
       const meetsGradYear =
-        user.grad_year !== null && user.grad_year !== undefined && criteria.min_grad_year
-          ? Number(user.grad_year) >= Number(criteria.min_grad_year)
+        user.grad_year !== null && user.grad_year !== undefined
+          ? Number(user.grad_year) >= Number(fallback.minimumGradYear)
           : false;
 
       const isEligible = meetsCgpa && meetsGradYear && missingSkills.length === 0;
 
       return res.status(200).json({
-        company: criteria.company_name,
-        companyId: Number(companyId),
+        company: fallback.company,
+        companyId: null,
         eligible: isEligible,
         meetsCgpa,
         meetsGradYear,
         missingSkills,
         requiredSkills,
-        minimumCgpa: criteria.min_cgpa,
-        minimumGradYear: criteria.min_grad_year,
+        minimumCgpa: fallback.minimumCgpa,
+        minimumGradYear: fallback.minimumGradYear,
+        isEstimate: true,
+        note: fallback.note,
       });
     }
 
-    // If no companyId specified, return eligibility overview for all companies
+    // If no company param specified, return eligibility overview for all 15 seeded companies
     const allCriteriaResult = await pgPool.query(
       `SELECT DISTINCT ON (c.name) c.id AS company_id, c.name AS company_name, e.min_cgpa, e.min_grad_year, e.required_skills
        FROM companies c
@@ -256,11 +341,11 @@ router.get(
         (skill) => !userSkills.some((item) => normalizeSkill(item) === normalizeSkill(skill))
       );
       const meetsCgpa =
-        user.cgpa !== null && user.cgpa !== undefined && row.min_cgpa
+        user.cgpa !== null && user.cgpa !== undefined && row.min_cgpa !== null && row.min_cgpa !== undefined
           ? Number(user.cgpa) >= Number(row.min_cgpa)
           : false;
       const meetsGradYear =
-        user.grad_year !== null && user.grad_year !== undefined && row.min_grad_year
+        user.grad_year !== null && user.grad_year !== undefined && row.min_grad_year !== null && row.min_grad_year !== undefined
           ? Number(user.grad_year) >= Number(row.min_grad_year)
           : false;
       const isEligible = meetsCgpa && meetsGradYear && missingSkills.length === 0;
@@ -275,10 +360,116 @@ router.get(
         requiredSkills,
         minimumCgpa: row.min_cgpa,
         minimumGradYear: row.min_grad_year,
+        isEstimate: false,
       };
     });
 
     res.status(200).json({ companies });
+  })
+);
+
+// -------------------------------------------------------------
+// REVERSE-MATCH ENDPOINT: GET /api/profile/matches (Task 6)
+// -------------------------------------------------------------
+
+router.get(
+  "/matches",
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const userResult = await pgPool.query(
+      `SELECT id, name, cgpa, grad_year FROM users WHERE id = $1`,
+      [req.user.id]
+    );
+
+    const user = userResult.rows[0];
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    const latestAnalysis = await getLatestAnalyzedResume(req.user.id);
+    const userSkills = Array.isArray(latestAnalysis?.extractedSkills)
+      ? latestAnalysis.extractedSkills
+      : [];
+
+    const allCriteriaResult = await pgPool.query(
+      `SELECT DISTINCT ON (c.name) c.id AS company_id, c.name AS company_name, e.min_cgpa, e.min_grad_year, e.required_skills
+       FROM companies c
+       LEFT JOIN eligibility_criteria e ON e.company_id = c.id
+       ORDER BY c.name, c.id`
+    );
+
+    const matches = allCriteriaResult.rows.map((row) => {
+      const requiredSkills = Array.isArray(row.required_skills) ? row.required_skills : [];
+      const matchedSkills = requiredSkills.filter((skill) =>
+        userSkills.some((item) => normalizeSkill(item) === normalizeSkill(skill))
+      );
+      const missingSkills = requiredSkills.filter(
+        (skill) => !userSkills.some((item) => normalizeSkill(item) === normalizeSkill(skill))
+      );
+
+      const meetsCgpa =
+        user.cgpa !== null && user.cgpa !== undefined && row.min_cgpa !== null && row.min_cgpa !== undefined
+          ? Number(user.cgpa) >= Number(row.min_cgpa)
+          : false;
+
+      const meetsGradYear =
+        user.grad_year !== null && user.grad_year !== undefined && row.min_grad_year !== null && row.min_grad_year !== undefined
+          ? Number(user.grad_year) >= Number(row.min_grad_year)
+          : false;
+
+      const eligible = meetsCgpa && meetsGradYear && missingSkills.length === 0;
+
+      // Construct specific human-readable unmet reasons
+      const unmetReasons = [];
+      if (!meetsCgpa) {
+        if (user.cgpa === null || user.cgpa === undefined) {
+          unmetReasons.push(`CGPA not set (minimum required: ${row.min_cgpa})`);
+        } else {
+          unmetReasons.push(`CGPA (${user.cgpa}) below minimum cutoff (${row.min_cgpa})`);
+        }
+      }
+      if (!meetsGradYear) {
+        if (user.grad_year === null || user.grad_year === undefined) {
+          unmetReasons.push(`Graduation year not set (minimum batch: ${row.min_grad_year})`);
+        } else {
+          unmetReasons.push(`Graduation batch (${user.grad_year}) before minimum batch (${row.min_grad_year})`);
+        }
+      }
+      if (missingSkills.length > 0) {
+        unmetReasons.push(
+          `Missing ${missingSkills.length} of ${requiredSkills.length} required skill${
+            requiredSkills.length === 1 ? "" : "s"
+          }: ${missingSkills.join(", ")}`
+        );
+      }
+
+      // Determine grouping tier: "qualify", "close", "not_yet"
+      let tier = "not_yet";
+      if (eligible) {
+        tier = "qualify";
+      } else if (missingSkills.length <= 1 && meetsCgpa && meetsGradYear) {
+        tier = "close";
+      } else if (missingSkills.length <= 2 && (meetsCgpa || meetsGradYear)) {
+        tier = "close";
+      }
+
+      return {
+        companyId: row.company_id,
+        company: row.company_name,
+        eligible,
+        meetsCgpa,
+        meetsGradYear,
+        requiredSkills,
+        matchedSkills,
+        missingSkills,
+        minimumCgpa: row.min_cgpa,
+        minimumGradYear: row.min_grad_year,
+        unmetReasons,
+        tier,
+      };
+    });
+
+    res.status(200).json({ matches });
   })
 );
 
@@ -290,6 +481,8 @@ router.get(
   "/recommendations",
   requireAuth,
   asyncHandler(async (req, res) => {
+    const targetRoleQuery = req.query.targetRole || req.query.role || req.query.targetRoleId;
+
     const userResult = await pgPool.query(
       `SELECT id, target_role_id FROM users WHERE id = $1`,
       [req.user.id]
@@ -301,14 +494,34 @@ router.get(
     }
 
     let expectedSkills = [];
-    if (user.target_role_id) {
-      const roleResult = await pgPool.query(
-        "SELECT expected_skills FROM target_roles WHERE id = $1",
-        [user.target_role_id]
-      );
-      expectedSkills = Array.isArray(roleResult.rows[0]?.expected_skills)
-        ? roleResult.rows[0].expected_skills
-        : [];
+    const roleToResolve = targetRoleQuery || user.target_role_id;
+
+    if (roleToResolve) {
+      const isNumeric = !isNaN(Number(roleToResolve)) && typeof roleToResolve !== "boolean";
+      let roleRow = null;
+
+      if (isNumeric) {
+        const roleResult = await pgPool.query(
+          "SELECT expected_skills FROM target_roles WHERE id = $1",
+          [Number(roleToResolve)]
+        );
+        roleRow = roleResult.rows[0];
+      }
+
+      if (!roleRow && typeof roleToResolve === "string") {
+        const roleResult = await pgPool.query(
+          "SELECT expected_skills FROM target_roles WHERE LOWER(name) = LOWER($1)",
+          [roleToResolve.trim()]
+        );
+        roleRow = roleResult.rows[0];
+      }
+
+      if (roleRow) {
+        expectedSkills = Array.isArray(roleRow.expected_skills) ? roleRow.expected_skills : [];
+      } else {
+        const fallback = getRoleFallback(roleToResolve);
+        expectedSkills = fallback.expected_skills;
+      }
     }
 
     const latestAnalysis = await getLatestAnalyzedResume(req.user.id);
@@ -316,7 +529,6 @@ router.get(
       ? latestAnalysis.extractedSkills
       : [];
 
-    // If no target role selected, provide recommendations based on general high-demand skills
     let targetSkills = expectedSkills;
     if (targetSkills.length === 0) {
       targetSkills = ["React", "Node.js", "PostgreSQL", "Docker", "Git", "REST APIs"];
@@ -355,7 +567,7 @@ router.post(
   "/skill-gap",
   requireAuth,
   asyncHandler(async (req, res) => {
-    const { targetRoleId } = req.body || {};
+    const { targetRoleId, targetRole, roleName } = req.body || {};
 
     const userResult = await pgPool.query(
       "SELECT id, target_role_id FROM users WHERE id = $1",
@@ -367,19 +579,46 @@ router.post(
       throw new AppError("User not found", 404);
     }
 
-    const roleId = targetRoleId || user.target_role_id;
-    if (!roleId) {
+    const roleInput = targetRoleId || targetRole || roleName || user.target_role_id;
+    if (!roleInput) {
       throw new AppError("No target role selected. Please select a target role first.", 400);
     }
 
-    const roleResult = await pgPool.query(
-      "SELECT id, name, expected_skills FROM target_roles WHERE id = $1",
-      [roleId]
-    );
+    const isNumeric = !isNaN(Number(roleInput)) && typeof roleInput !== "boolean";
+    let roleRow = null;
 
-    const role = roleResult.rows[0];
-    if (!role) {
-      throw new AppError("Target role not found", 404);
+    if (isNumeric) {
+      const roleResult = await pgPool.query(
+        "SELECT id, name, expected_skills FROM target_roles WHERE id = $1",
+        [Number(roleInput)]
+      );
+      roleRow = roleResult.rows[0];
+    }
+
+    if (!roleRow && typeof roleInput === "string") {
+      const roleResult = await pgPool.query(
+        "SELECT id, name, expected_skills FROM target_roles WHERE LOWER(name) = LOWER($1)",
+        [roleInput.trim()]
+      );
+      roleRow = roleResult.rows[0];
+    }
+
+    let resolvedRoleName = "";
+    let expectedSkills = [];
+    let isEstimate = false;
+    let estimateNote = null;
+
+    if (roleRow) {
+      resolvedRoleName = roleRow.name;
+      expectedSkills = Array.isArray(roleRow.expected_skills) ? roleRow.expected_skills : [];
+      isEstimate = false;
+      estimateNote = null;
+    } else {
+      const fallback = getRoleFallback(roleInput);
+      resolvedRoleName = fallback.name;
+      expectedSkills = fallback.expected_skills;
+      isEstimate = true;
+      estimateNote = fallback.note;
     }
 
     // Retrieve analyzed resume using resilient helper
@@ -396,8 +635,6 @@ router.post(
     }
 
     const resumeSkillSet = new Set(latestAnalysis.extractedSkills.map(normalizeSkill));
-    const expectedSkills = Array.isArray(role.expected_skills) ? role.expected_skills : [];
-
     const missingSkills = expectedSkills.filter((skill) => !resumeSkillSet.has(normalizeSkill(skill)));
     const priority = {};
     missingSkills.forEach((skill, index) => {
@@ -406,12 +643,13 @@ router.post(
 
     const skillGapDoc = await SkillGap.create({
       userId: req.user.id,
-      targetRole: role.name,
+      targetRole: resolvedRoleName,
       missingSkills,
       priority,
+      isEstimate,
+      note: estimateNote,
     });
 
-    // Ensure priority map is serialized cleanly as a plain object
     const rawPriority =
       skillGapDoc.priority instanceof Map
         ? Object.fromEntries(skillGapDoc.priority)
@@ -425,6 +663,8 @@ router.post(
         targetRole: skillGapDoc.targetRole,
         missingSkills: skillGapDoc.missingSkills,
         priority: rawPriority,
+        isEstimate: Boolean(skillGapDoc.isEstimate),
+        note: skillGapDoc.note || estimateNote,
         createdAt: skillGapDoc.createdAt,
       },
     });
@@ -453,6 +693,8 @@ router.get(
           targetRole: latestGap.targetRole,
           missingSkills: latestGap.missingSkills,
           priority: rawPriority,
+          isEstimate: Boolean(latestGap.isEstimate),
+          note: latestGap.note || null,
           createdAt: latestGap.createdAt,
         },
       });
