@@ -256,8 +256,22 @@ async function connectPostgres() {
   try {
     const client = await realPool.connect();
     await client.query("SELECT 1");
+
+    // Ensure all 15 companies & criteria are present in the live database
+    try {
+      const fs = require("fs");
+      const path = require("path");
+      const schemaPath = path.join(__dirname, "schema.sql");
+      if (fs.existsSync(schemaPath)) {
+        const schemaSql = fs.readFileSync(schemaPath, "utf-8");
+        await client.query(schemaSql);
+      }
+    } catch (seedErr) {
+      console.warn("Notice: schema auto-seed check:", seedErr.message);
+    }
+
     client.release();
-    console.log("Postgres connected");
+    console.log("Postgres connected and verified");
     isPgConnected = true;
     return true;
   } catch (err) {
