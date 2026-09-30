@@ -77,7 +77,7 @@ function Register() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              placeholder="Anisha Agrawal"
+              placeholder="Enter your full name"
               className="w-full bg-white border border-zinc-200 text-zinc-900 placeholder:text-zinc-400 rounded-lg px-3 py-2 text-xs sm:text-sm font-normal shadow-xs focus:outline-none focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900 transition"
             />
           </div>
