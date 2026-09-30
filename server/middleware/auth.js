@@ -11,7 +11,8 @@ function requireAuth(req, res, next) {
   const token = authHeader.split(" ")[1];
 
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    const jwtSecret = process.env.JWT_SECRET || "nexora_default_jwt_secret_key_2026";
+    const payload = jwt.verify(token, jwtSecret);
     req.user = payload;
     next();
   } catch (err) {

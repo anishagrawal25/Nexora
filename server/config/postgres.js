@@ -64,7 +64,7 @@ const memoryDb = {
       id: 1,
       name: "Demo Student",
       email: "demo@college.edu",
-      password_hash: "$2b$10$wTfZ4gVzYnU7fR2zCkJmEuj0r9kUuN1C6bFv5fR7dFm8gK9lOqP2W",
+      password_hash: "$2b$10$VzQcHp.elQwmVWakaXqJCOmjJVpKk9JmpjtQZQJmwfUU412HmmGt2",
       cgpa: 8.20,
       grad_year: 2025,
       github_url: "https://github.com/demo",

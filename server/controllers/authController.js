@@ -30,7 +30,8 @@ const register = asyncHandler(async (req, res) => {
 
   const user = result.rows[0];
 
-  const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
+  const jwtSecret = process.env.JWT_SECRET || "nexora_default_jwt_secret_key_2026";
+  const token = jwt.sign({ id: user.id, email: user.email }, jwtSecret, {
     expiresIn: "7d",
   });
 
@@ -58,7 +59,8 @@ const login = asyncHandler(async (req, res) => {
     throw new AppError("Invalid email or password", 401);
   }
 
-  const token = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_SECRET, {
+  const jwtSecret = process.env.JWT_SECRET || "nexora_default_jwt_secret_key_2026";
+  const token = jwt.sign({ id: user.id, email: user.email }, jwtSecret, {
     expiresIn: "7d",
   });
 
