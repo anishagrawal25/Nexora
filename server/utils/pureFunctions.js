@@ -150,6 +150,123 @@ function validatePassword(password) {
   return password.length >= 6;
 }
 
+const ROLE_FALLBACK_MAP = [
+  {
+    regex: /\b(frontend|front-end|ui|client)\b/i,
+    skills: ["React", "JavaScript", "CSS", "Git", "REST APIs", "HTML"],
+  },
+  {
+    regex: /\b(backend|back-end|api|server|microservice)\b/i,
+    skills: ["Node.js", "Express", "PostgreSQL", "SQL", "Docker", "REST APIs"],
+  },
+  {
+    regex: /\b(full\s*stack|fullstack)\b/i,
+    skills: ["React", "Node.js", "Express", "PostgreSQL", "MongoDB", "Git", "Docker", "REST APIs"],
+  },
+  {
+    regex: /\b(data\s*analyst|analytics|bi|business\s*intelligence)\b/i,
+    skills: ["Python", "SQL", "PostgreSQL", "Excel", "Data Visualization"],
+  },
+  {
+    regex: /\b(data\s*science|machine\s*learning|ai|ml|deep\s*learning|nlp|computer\s*vision)\b/i,
+    skills: ["Python", "SQL", "Data Structures", "Git"],
+  },
+  {
+    regex: /\b(devops|cloud|sre|reliability|infrastructure|platform|kubernetes)\b/i,
+    skills: ["Docker", "Git", "Linux", "Azure", "REST APIs"],
+  },
+  {
+    regex: /\b(mobile|android|ios|flutter|react\s*native|swift|kotlin)\b/i,
+    skills: ["JavaScript", "React", "Git", "REST APIs"],
+  },
+  {
+    regex: /\b(design|designer|ui\/ux|ux|product\s*designer)\b/i,
+    skills: ["CSS", "HTML", "JavaScript"],
+  },
+  {
+    regex: /\b(qa|quality|test|tester|sdet|automation)\b/i,
+    skills: ["JavaScript", "Git", "SQL", "REST APIs"],
+  },
+  {
+    regex: /\b(security|cyber|cybersecurity|infosec)\b/i,
+    skills: ["Python", "Git", "SQL", "REST APIs"],
+  },
+  {
+    regex: /\b(engineer|developer|programmer|software|swe|architect)\b/i,
+    skills: ["Data Structures", "Git", "JavaScript", "SQL", "REST APIs"],
+  },
+];
+
+const DEFAULT_ROLE_SKILLS = ["Git", "JavaScript", "SQL", "REST APIs", "Data Structures"];
+
+function getRoleFallback(roleName) {
+  const name = String(roleName || "").trim();
+  let expectedSkills = DEFAULT_ROLE_SKILLS;
+
+  for (const item of ROLE_FALLBACK_MAP) {
+    if (item.regex.test(name)) {
+      expectedSkills = item.skills;
+      break;
+    }
+  }
+
+  return {
+    name: name || "Custom Role",
+    expected_skills: expectedSkills,
+    isEstimate: true,
+    note: `General guidance — we don't have specific data for '${name || "this role"}' yet.`,
+  };
+}
+
+const COMPANY_FALLBACK_TIERS = [
+  {
+    regex: /\b(startup|labs?|studio|ventures?|tech|io|app|ai|digital)\b/i,
+    minCgpa: 6.50,
+    minGradYear: 2023,
+    requiredSkills: ["Git", "REST APIs", "JavaScript"],
+  },
+  {
+    regex: /\b(consulting|services|technologies|solutions|global|systems|infotech|corp)\b/i,
+    minCgpa: 6.50,
+    minGradYear: 2023,
+    requiredSkills: ["Java", "SQL", "Git"],
+  },
+  {
+    regex: /\b(bank|banking|capital|finance|financial|fintech|pay|payments|invest|securities)\b/i,
+    minCgpa: 7.00,
+    minGradYear: 2023,
+    requiredSkills: ["SQL", "Data Structures", "Git"],
+  },
+];
+
+const DEFAULT_COMPANY_TIER = {
+  minCgpa: 6.50,
+  minGradYear: 2023,
+  requiredSkills: ["Git", "REST APIs"],
+};
+
+function getCompanyFallback(companyName) {
+  const name = String(companyName || "").trim();
+  let tier = DEFAULT_COMPANY_TIER;
+
+  for (const item of COMPANY_FALLBACK_TIERS) {
+    if (item.regex.test(name)) {
+      tier = item;
+      break;
+    }
+  }
+
+  return {
+    company: name || "Custom Company",
+    companyId: null,
+    minimumCgpa: tier.minCgpa,
+    minimumGradYear: tier.minGradYear,
+    requiredSkills: tier.requiredSkills,
+    isEstimate: true,
+    note: `General guidance — we don't have specific data for '${name || "this company"}' yet.`,
+  };
+}
+
 module.exports = {
   RESOURCE_MAP,
   normalizeSkill,
@@ -162,4 +279,8 @@ module.exports = {
   calculateReadiness,
   validateEmail,
   validatePassword,
+  getRoleFallback,
+  getCompanyFallback,
+  ROLE_FALLBACK_MAP,
+  COMPANY_FALLBACK_TIERS,
 };

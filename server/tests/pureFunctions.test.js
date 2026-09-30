@@ -9,6 +9,8 @@ const {
   findResource,
   validateEmail,
   validatePassword,
+  getRoleFallback,
+  getCompanyFallback,
 } = require("../utils/pureFunctions");
 
 describe("Nexora Pure Functions & Calculations", () => {
@@ -164,4 +166,40 @@ describe("Nexora Pure Functions & Calculations", () => {
       assert.equal(validatePassword(null), false);
     });
   });
+
+  describe("Fallback Logic for Unmatched Inputs", () => {
+    test("getRoleFallback matches keyword categories and marks isEstimate true", () => {
+      const devopsFallback = getRoleFallback("DevOps Cloud Architect");
+      assert.equal(devopsFallback.isEstimate, true);
+      assert.ok(devopsFallback.expected_skills.includes("Docker"));
+      assert.ok(devopsFallback.note.includes("General guidance — we don't have specific data for 'DevOps Cloud Architect' yet."));
+
+      const mobileFallback = getRoleFallback("iOS App Developer");
+      assert.equal(mobileFallback.isEstimate, true);
+      assert.ok(mobileFallback.expected_skills.includes("React") || mobileFallback.expected_skills.includes("JavaScript"));
+
+      const genericFallback = getRoleFallback("Quantum Computing Specialist");
+      assert.equal(genericFallback.isEstimate, true);
+      assert.ok(genericFallback.expected_skills.length > 0);
+      assert.ok(genericFallback.note.includes("Quantum Computing Specialist"));
+    });
+
+    test("getCompanyFallback matches heuristic tiers and marks isEstimate true", () => {
+      const startupFallback = getCompanyFallback("Acme AI Labs");
+      assert.equal(startupFallback.isEstimate, true);
+      assert.equal(startupFallback.minimumCgpa, 6.50);
+      assert.ok(startupFallback.requiredSkills.includes("Git"));
+      assert.ok(startupFallback.note.includes("General guidance — we don't have specific data for 'Acme AI Labs' yet."));
+
+      const fintechFallback = getCompanyFallback("Stripe Payments");
+      assert.equal(fintechFallback.isEstimate, true);
+      assert.equal(fintechFallback.minimumCgpa, 7.00);
+
+      const unknownFallback = getCompanyFallback("Random Enterprise X");
+      assert.equal(unknownFallback.isEstimate, true);
+      assert.ok(unknownFallback.minimumCgpa <= 7.00);
+      assert.ok(unknownFallback.note.includes("Random Enterprise X"));
+    });
+  });
 });
+
