@@ -27,6 +27,28 @@ app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/resume", resumeRoutes);
 
+app.get("/", (req, res) => {
+  res.status(200).json({
+    name: "Nexora Career Readiness API",
+    status: "online",
+    message: "Nexora backend server is running successfully.",
+    endpoints: {
+      health: "/api/health",
+      auth: "/api/auth",
+      profile: "/api/profile",
+      resume: "/api/resume",
+    },
+  });
+});
+
+app.get("/api", (req, res) => {
+  res.status(200).json({
+    status: "online",
+    message: "Nexora API root",
+    health: "/api/health",
+  });
+});
+
 app.get("/api/health", (req, res) => {
   res.status(200).json({ status: "ok" });
 });
