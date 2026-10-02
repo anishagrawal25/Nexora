@@ -156,7 +156,7 @@ function Landing() {
 
           {/* Interactive UI Demo Shell */}
           <div className="bg-white border border-zinc-200 rounded-xl shadow-sm overflow-hidden">
-            {/* Mock Top Toolbar */}
+            {/* Interactive Demo Top Toolbar */}
             <div className="bg-zinc-50 px-4 py-3 border-b border-zinc-200 flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-zinc-300" />
@@ -203,7 +203,7 @@ function Landing() {
               </div>
             </div>
 
-            {/* Mock Tab 1: Scorecard */}
+            {/* Demo Tab 1: Scorecard */}
             {activeDemoTab === 'score' && (
               <div className="p-6 sm:p-8 space-y-6">
                 <div className="grid sm:grid-cols-3 gap-4">
@@ -249,7 +249,7 @@ function Landing() {
               </div>
             )}
 
-            {/* Mock Tab 2: Skill Gaps */}
+            {/* Demo Tab 2: Skill Gaps */}
             {activeDemoTab === 'gaps' && (
               <div className="p-6 sm:p-8 space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-zinc-200">
@@ -290,7 +290,7 @@ function Landing() {
               </div>
             )}
 
-            {/* Mock Tab 3: Reverse Company Fit */}
+            {/* Demo Tab 3: Reverse Company Fit */}
             {activeDemoTab === 'fit' && (
               <div className="p-6 sm:p-8 space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-zinc-200">
