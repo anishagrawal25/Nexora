@@ -17,17 +17,34 @@ const { connectMongo } = require("./config/mongo");
 const authRoutes = require("./routes/authRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 const { errorHandler } = require("./middleware/errorHandler");
-const resumeRoutes = require("./routes/resumeRoutes");
+const path = require("path");
+const fs = require("fs");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use("/api/auth", authRoutes);
-app.use("/api/profile", profileRoutes);
-app.use("/api/resume", resumeRoutes);
 
-app.get("/", (req, res) => {
+// Support both /api/* and non-prefixed routes for deployment flexibility
+app.use("/api/auth", authRoutes);
+app.use("/auth", authRoutes);
+
+app.use("/api/profile", profileRoutes);
+app.use("/profile", profileRoutes);
+
+app.use("/api/resume", resumeRoutes);
+app.use("/resume", resumeRoutes);
+
+// If client build exists (fullstack deployment), serve static files
+const clientDistPath = path.join(__dirname, "../client/dist");
+if (fs.existsSync(clientDistPath)) {
+  app.use(express.static(clientDistPath));
+}
+
+app.get("/", (req, res, next) => {
+  if (fs.existsSync(clientDistPath)) {
+    return res.sendFile(path.join(clientDistPath, "index.html"));
+  }
   res.status(200).json({
     name: "Nexora Career Readiness API",
     status: "online",
@@ -52,6 +69,26 @@ app.get("/api", (req, res) => {
 app.get("/api/health", (req, res) => {
   res.status(200).json({ status: "ok" });
 });
+
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
+// SPA fallback for frontend client routing when deployed together
+if (fs.existsSync(clientDistPath)) {
+  app.get("*", (req, res, next) => {
+    if (
+      req.path.startsWith("/api") ||
+      req.path.startsWith("/auth") ||
+      req.path.startsWith("/profile") ||
+      req.path.startsWith("/resume") ||
+      req.path.startsWith("/health")
+    ) {
+      return next();
+    }
+    res.sendFile(path.join(clientDistPath, "index.html"));
+  });
+}
 
 const PORT = process.env.PORT || 5000;
 app.use(errorHandler);
