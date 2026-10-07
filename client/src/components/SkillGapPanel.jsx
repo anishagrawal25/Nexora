@@ -130,20 +130,20 @@ function SkillGapPanel({
     const p = String(priority).toLowerCase();
     if (p === 'high') {
       return (
-        <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded border font-medium bg-rose-50 text-rose-700 border-rose-200">
+        <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-md border font-medium bg-[#FDF0ED] text-[#9E2A2B] border-[#F5CAC3]">
           High Priority
         </span>
       );
     }
     if (p === 'medium') {
       return (
-        <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded border font-medium bg-amber-50 text-amber-800 border-amber-200">
+        <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-md border font-medium bg-[#FEF6E9] text-[#8C5819] border-[#F6E0B8]">
           Medium Priority
         </span>
       );
     }
     return (
-      <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded border font-medium bg-zinc-100 text-zinc-700 border-zinc-200">
+      <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-md border font-medium bg-[#F2EFE9] text-[#5B6670] border-[#E4E1D8]">
         Supporting
       </span>
     );
@@ -152,27 +152,27 @@ function SkillGapPanel({
   return (
     <div className="space-y-6">
       {/* Top Header Card */}
-      <div className="bg-white border border-zinc-200 rounded-xl p-6 sm:p-7 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-zinc-200">
+      <div className="bg-white border border-[#E4E1D8] rounded-2xl p-6 sm:p-7 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#E4E1D8]">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[11px] font-mono tracking-wider text-zinc-500 uppercase font-medium">
+              <span className="font-mono text-xs uppercase tracking-widest text-[#1F6F5C] font-medium">
                 GAP ASSESSMENT
               </span>
               {skillGap?.isEstimate && (
-                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-amber-50 text-amber-800 border border-amber-200">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-[#FEF6E9] text-[#8C5819] border border-[#F6E0B8]">
                   Heuristic Baseline
                 </span>
               )}
             </div>
-            <h2 className="text-lg sm:text-xl font-semibold text-zinc-900 tracking-tight mt-0.5">
+            <h2 className="font-serif italic text-xl sm:text-2xl font-medium text-[#12181B] tracking-tight mt-0.5">
               Role Skill Gap Matrix
             </h2>
-            <p className="text-xs text-zinc-500 mt-1">
+            <p className="text-xs text-[#5B6670] mt-1">
               {targetRoleName ? (
                 <>
                   Benchmarking your resume against{' '}
-                  <strong className="text-zinc-900 font-medium">{targetRoleName}</strong> technical
+                  <strong className="text-[#12181B] font-medium">{targetRoleName}</strong> technical
                   competencies.
                 </>
               ) : (
@@ -186,7 +186,7 @@ function SkillGapPanel({
               <button
                 onClick={() => handleGenerateSkillGap()}
                 disabled={loading}
-                className="bg-zinc-900 text-white text-xs font-medium px-4 py-2 rounded-lg hover:bg-zinc-800 transition disabled:opacity-50 inline-flex items-center gap-2 cursor-pointer shadow-xs"
+                className="bg-[#1F6F5C] hover:bg-[#185849] active:bg-[#14493D] text-white text-xs font-medium px-4 py-2 rounded-xl transition disabled:opacity-50 inline-flex items-center gap-2 cursor-pointer shadow-xs"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
                 {loading ? 'Re-evaluating...' : skillGap ? 'Refresh Gaps' : 'Run Gap Analysis'}
@@ -196,17 +196,17 @@ function SkillGapPanel({
         </div>
 
         {error && (
-          <div className="mt-4 p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-center gap-2">
+          <div className="mt-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-center gap-2">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
         {skillGap?.isEstimate && (
-          <div className="mt-4 p-3.5 rounded-lg bg-amber-50/70 border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5">
-            <Sparkles className="w-4 h-4 shrink-0 text-amber-700 mt-0.5" />
+          <div className="mt-4 p-3.5 rounded-xl bg-[#FEF6E9] border border-[#F6E0B8] text-xs text-[#8C5819] flex items-start gap-2.5">
+            <Sparkles className="w-4 h-4 shrink-0 text-[#8C5819] mt-0.5" />
             <div className="leading-relaxed">
-              <span className="font-semibold text-amber-950">General Role Guidance: </span>
+              <span className="font-semibold text-[#8C5819]">General Role Guidance: </span>
               {skillGap.note ||
                 `Using standard industry competencies for '${targetRoleName}' since custom benchmark data is evolving.`}
             </div>
@@ -215,10 +215,10 @@ function SkillGapPanel({
 
         {/* Empty Role Selector State */}
         {!targetRoleName && (
-          <div className="mt-6 text-center py-10 px-4 border border-dashed border-zinc-200 rounded-lg bg-zinc-50/50">
-            <Target className="w-8 h-8 text-zinc-400 mx-auto mb-2" />
-            <h3 className="text-sm font-semibold text-zinc-900 mb-1">Select your target track</h3>
-            <p className="text-xs text-zinc-500 max-w-sm mx-auto mb-4">
+          <div className="mt-6 text-center py-10 px-4 border border-dashed border-[#E4E1D8] rounded-xl bg-[#FBFAF6]">
+            <Target className="w-8 h-8 text-[#5B6670] mx-auto mb-2" />
+            <h3 className="font-serif italic text-base font-medium text-[#12181B] mb-1">Select your target track</h3>
+            <p className="text-xs text-[#5B6670] max-w-sm mx-auto mb-4">
               Type any career goal or choose from established engineering tracks to evaluate your
               skill profile.
             </p>
@@ -241,58 +241,58 @@ function SkillGapPanel({
         {/* Benchmark Overview Metrics Bar */}
         {targetRoleName && skillGap && (
           <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="p-3.5 rounded-lg bg-zinc-50 border border-zinc-200/80 flex flex-col justify-between">
-              <span className="text-[10px] font-mono tracking-wider text-zinc-500 uppercase font-medium">
+            <div className="p-4 rounded-xl bg-[#FBFAF6] border border-[#E4E1D8] flex flex-col justify-between">
+              <span className="text-[10px] font-mono tracking-widest text-[#5B6670] uppercase font-medium">
                 Benchmark Match
               </span>
               <div className="my-1.5 flex items-baseline gap-1">
-                <span className="text-2xl font-semibold font-mono text-zinc-900">
+                <span className="text-2xl font-semibold font-mono text-[#12181B]">
                   {matchPercentage}%
                 </span>
-                <span className="text-[11px] font-mono text-zinc-500">
+                <span className="text-[11px] font-mono text-[#5B6670]">
                   ({verifiedCount}/{totalBenchmarkCount || missingSkills.length})
                 </span>
               </div>
-              <p className="text-[11px] text-zinc-500">Requirements met</p>
+              <p className="text-[11px] text-[#5B6670]">Requirements met</p>
             </div>
 
-            <div className="p-3.5 rounded-lg bg-zinc-50 border border-zinc-200/80 flex flex-col justify-between">
-              <span className="text-[10px] font-mono tracking-wider text-zinc-500 uppercase font-medium">
+            <div className="p-4 rounded-xl bg-[#FBFAF6] border border-[#E4E1D8] flex flex-col justify-between">
+              <span className="text-[10px] font-mono tracking-widest text-[#5B6670] uppercase font-medium">
                 Core Gaps (High)
               </span>
               <div className="my-1.5 flex items-baseline gap-1">
-                <span className="text-2xl font-semibold font-mono text-rose-700">
+                <span className="text-2xl font-semibold font-mono text-[#9E2A2B]">
                   {highPriorityGaps.length}
                 </span>
-                <span className="text-[11px] font-mono text-zinc-500">critical</span>
+                <span className="text-[11px] font-mono text-[#5B6670]">critical</span>
               </div>
-              <p className="text-[11px] text-zinc-500">High priority focus</p>
+              <p className="text-[11px] text-[#5B6670]">High priority focus</p>
             </div>
 
-            <div className="p-3.5 rounded-lg bg-zinc-50 border border-zinc-200/80 flex flex-col justify-between">
-              <span className="text-[10px] font-mono tracking-wider text-zinc-500 uppercase font-medium">
+            <div className="p-4 rounded-xl bg-[#FBFAF6] border border-[#E4E1D8] flex flex-col justify-between">
+              <span className="text-[10px] font-mono tracking-widest text-[#5B6670] uppercase font-medium">
                 Supporting Gaps
               </span>
               <div className="my-1.5 flex items-baseline gap-1">
-                <span className="text-2xl font-semibold font-mono text-amber-700">
+                <span className="text-2xl font-semibold font-mono text-[#8C5819]">
                   {mediumAndSupportingGaps.length}
                 </span>
-                <span className="text-[11px] font-mono text-zinc-500">secondary</span>
+                <span className="text-[11px] font-mono text-[#5B6670]">secondary</span>
               </div>
-              <p className="text-[11px] text-zinc-500">Medium / low priority</p>
+              <p className="text-[11px] text-[#5B6670]">Medium / low priority</p>
             </div>
 
-            <div className="p-3.5 rounded-lg bg-zinc-50 border border-zinc-200/80 flex flex-col justify-between">
-              <span className="text-[10px] font-mono tracking-wider text-zinc-500 uppercase font-medium">
+            <div className="p-4 rounded-xl bg-[#FBFAF6] border border-[#E4E1D8] flex flex-col justify-between">
+              <span className="text-[10px] font-mono tracking-widest text-[#5B6670] uppercase font-medium">
                 Verified Skills
               </span>
               <div className="my-1.5 flex items-baseline gap-1">
-                <span className="text-2xl font-semibold font-mono text-emerald-700">
+                <span className="text-2xl font-semibold font-mono text-[#1F6F5C]">
                   {verifiedCount}
                 </span>
-                <span className="text-[11px] font-mono text-zinc-500">on resume</span>
+                <span className="text-[11px] font-mono text-[#5B6670]">on resume</span>
               </div>
-              <p className="text-[11px] text-zinc-500">Verified competencies</p>
+              <p className="text-[11px] text-[#5B6670]">Verified competencies</p>
             </div>
           </div>
         )}
@@ -302,92 +302,92 @@ function SkillGapPanel({
       {targetRoleName && skillGap && (
         <div className="space-y-6">
           {/* Segmented Filter Control */}
-          <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-2 border border-zinc-200 rounded-lg shadow-xs">
-            <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-mono text-zinc-400 uppercase font-medium px-2 hidden sm:inline">
+          <div className="flex flex-wrap items-center justify-between gap-3 bg-[#F2EFE9] p-1 border border-[#E4E1D8] rounded-xl shadow-xs">
+            <div className="flex items-center gap-1">
+              <span className="text-[11px] font-mono text-[#5B6670] uppercase font-medium px-2 hidden sm:inline">
                 Filter:
               </span>
               <button
                 onClick={() => setActiveFilter('all')}
-                className={`text-xs px-3 py-1.5 rounded-md font-medium transition cursor-pointer ${
+                className={`text-xs px-3 py-1.5 rounded-lg font-medium transition cursor-pointer ${
                   activeFilter === 'all'
-                    ? 'bg-zinc-900 text-white shadow-xs'
-                    : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
+                    ? 'bg-white text-[#12181B] shadow-xs font-semibold'
+                    : 'text-[#5B6670] hover:text-[#12181B]'
                 }`}
               >
                 All Requirements ({roleExpectedSkills.length || missingSkills.length})
               </button>
               <button
                 onClick={() => setActiveFilter('high')}
-                className={`text-xs px-3 py-1.5 rounded-md font-medium transition cursor-pointer ${
+                className={`text-xs px-3 py-1.5 rounded-lg font-medium transition cursor-pointer ${
                   activeFilter === 'high'
-                    ? 'bg-zinc-900 text-white shadow-xs'
-                    : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
+                    ? 'bg-white text-[#12181B] shadow-xs font-semibold'
+                    : 'text-[#5B6670] hover:text-[#12181B]'
                 }`}
               >
                 High Priority ({highPriorityGaps.length})
               </button>
               <button
                 onClick={() => setActiveFilter('medium')}
-                className={`text-xs px-3 py-1.5 rounded-md font-medium transition cursor-pointer ${
+                className={`text-xs px-3 py-1.5 rounded-lg font-medium transition cursor-pointer ${
                   activeFilter === 'medium'
-                    ? 'bg-zinc-900 text-white shadow-xs'
-                    : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
+                    ? 'bg-white text-[#12181B] shadow-xs font-semibold'
+                    : 'text-[#5B6670] hover:text-[#12181B]'
                 }`}
               >
                 Supporting ({mediumAndSupportingGaps.length})
               </button>
               <button
                 onClick={() => setActiveFilter('verified')}
-                className={`text-xs px-3 py-1.5 rounded-md font-medium transition cursor-pointer ${
+                className={`text-xs px-3 py-1.5 rounded-lg font-medium transition cursor-pointer ${
                   activeFilter === 'verified'
-                    ? 'bg-zinc-900 text-white shadow-xs'
-                    : 'text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100'
+                    ? 'bg-white text-[#12181B] shadow-xs font-semibold'
+                    : 'text-[#5B6670] hover:text-[#12181B]'
                 }`}
               >
                 Verified on Resume ({verifiedCount})
               </button>
             </div>
 
-            <div className="text-[11px] text-zinc-400 font-mono pr-2 hidden md:inline">
+            <div className="text-[11px] text-[#5B6670] font-mono pr-2 hidden md:inline">
               Sorted by hiring weight
             </div>
           </div>
 
           {/* ZERO GAPS STATE */}
           {missingSkills.length === 0 && (
-            <div className="p-6 rounded-xl bg-emerald-50/75 border border-emerald-200 text-emerald-950 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="p-6 rounded-2xl bg-[#EBF3F0] border border-[#CDE3DC] text-[#1F6F5C] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-5 h-5 text-[#1F6F5C] shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-sm font-semibold">100% Benchmark Coverage</h4>
-                  <p className="text-xs text-emerald-800 mt-1 max-w-xl">
+                  <h4 className="font-serif italic text-base font-medium text-[#12181B]">100% Benchmark Coverage</h4>
+                  <p className="text-xs text-[#5B6670] mt-1 max-w-xl">
                     Your profile matches all expected technical competencies for{' '}
-                    <strong>{targetRoleName}</strong>. You are fully positioned for technical
+                    <strong className="text-[#12181B]">{targetRoleName}</strong>. You are fully positioned for technical
                     interview rounds on this track.
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => onNavigateTab && onNavigateTab('eligibility')}
-                className="text-xs font-medium text-emerald-950 bg-white border border-emerald-200 px-4 py-2 rounded-lg hover:bg-emerald-50 transition cursor-pointer shadow-xs self-start sm:self-auto shrink-0"
+                className="text-xs font-medium text-[#12181B] bg-white border border-[#E4E1D8] px-4 py-2 rounded-xl hover:bg-[#F2EFE9] transition cursor-pointer shadow-xs self-start sm:self-auto shrink-0"
               >
                 Check Company Eligibility →
               </button>
             </div>
           )}
 
-          {/* SECTION 1: HIGH PRIORITY GAPS (Structured Cards with Context & Focus Areas) */}
+          {/* SECTION 1: HIGH PRIORITY GAPS */}
           {(activeFilter === 'all' || activeFilter === 'high') && highPriorityGaps.length > 0 && (
             <div className="space-y-3">
               <div className="flex items-center justify-between px-1">
                 <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-rose-500" />
-                  <h3 className="text-xs font-mono uppercase tracking-wider text-zinc-900 font-semibold">
+                  <span className="w-2 h-2 rounded-full bg-[#9E2A2B]" />
+                  <h3 className="font-mono text-xs uppercase tracking-widest text-[#12181B] font-medium">
                     Core Missing Competencies ({highPriorityGaps.length})
                   </h3>
                 </div>
-                <span className="text-[11px] text-zinc-500">
+                <span className="text-[11px] text-[#5B6670]">
                   Critical prerequisites for technical screening
                 </span>
               </div>
@@ -403,15 +403,15 @@ function SkillGapPanel({
                   return (
                     <div
                       key={skill}
-                      className="bg-white border border-zinc-200 rounded-xl p-5 shadow-xs flex flex-col justify-between hover:border-zinc-300 transition"
+                      className="bg-white border border-[#E4E1D8] rounded-2xl p-5 shadow-xs flex flex-col justify-between hover:border-[#1F6F5C]/40 transition"
                     >
                       <div>
                         {/* Card Top: Name, Domain, Priority */}
                         <div className="flex items-start justify-between gap-2 mb-2.5">
                           <div>
                             <div className="flex items-center gap-2">
-                              <h4 className="text-sm font-semibold text-zinc-900">{skill}</h4>
-                              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-100 text-zinc-600 border border-zinc-200">
+                              <h4 className="text-sm font-semibold text-[#12181B]">{skill}</h4>
+                              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-[#F2EFE9] text-[#5B6670] border border-[#E4E1D8]">
                                 {domain}
                               </span>
                             </div>
@@ -420,23 +420,23 @@ function SkillGapPanel({
                         </div>
 
                         {/* Contextual Reason */}
-                        <div className="p-2.5 rounded-lg bg-zinc-50/80 border border-zinc-200/80 mb-3.5">
-                          <p className="text-xs text-zinc-700 leading-relaxed font-normal">
+                        <div className="p-3 rounded-xl bg-[#FBFAF6] border border-[#E4E1D8] mb-3.5">
+                          <p className="text-xs text-[#5B6670] leading-relaxed font-normal">
                             {reason}
                           </p>
                         </div>
 
-                        {/* Honest Metadata Specs (No fake progress) */}
+                        {/* Metadata Specs */}
                         <div className="grid grid-cols-2 gap-2 mb-3.5 text-[11px]">
-                          <div className="flex items-center gap-1.5 text-zinc-600">
-                            <Clock className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                          <div className="flex items-center gap-1.5 text-[#5B6670]">
+                            <Clock className="w-3.5 h-3.5 text-[#5B6670] shrink-0" />
                             <span>Prep Time: </span>
-                            <strong className="text-zinc-900 font-medium">{estimate.time}</strong>
+                            <strong className="text-[#12181B] font-medium">{estimate.time}</strong>
                           </div>
-                          <div className="flex items-center gap-1.5 text-zinc-600">
-                            <Layers className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                          <div className="flex items-center gap-1.5 text-[#5B6670]">
+                            <Layers className="w-3.5 h-3.5 text-[#5B6670] shrink-0" />
                             <span>Target Stage: </span>
-                            <strong className="text-zinc-900 font-medium">
+                            <strong className="text-[#12181B] font-medium">
                               {estimate.level}
                             </strong>
                           </div>
@@ -444,16 +444,16 @@ function SkillGapPanel({
 
                         {/* Key Focus Topics */}
                         <div className="mb-4">
-                          <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider block mb-1.5">
+                          <span className="text-[10px] font-mono text-[#5B6670] uppercase tracking-widest block mb-1.5 font-medium">
                             Key Benchmark Concepts:
                           </span>
                           <ul className="space-y-1">
                             {topics.slice(0, 3).map((topic, i) => (
                               <li
                                 key={i}
-                                className="text-xs text-zinc-600 flex items-center gap-1.5"
+                                className="text-xs text-[#5B6670] flex items-center gap-1.5"
                               >
-                                <span className="w-1 h-1 rounded-full bg-zinc-400" />
+                                <span className="w-1 h-1 rounded-full bg-[#5B6670]" />
                                 <span className="truncate">{topic}</span>
                               </li>
                             ))}
@@ -462,24 +462,24 @@ function SkillGapPanel({
                       </div>
 
                       {/* Purposeful Action Bar */}
-                      <div className="pt-3 border-t border-zinc-100 flex items-center justify-between gap-2">
+                      <div className="pt-3 border-t border-[#E4E1D8] flex items-center justify-between gap-2">
                         <button
                           onClick={() => onNavigateTab && onNavigateTab('recommendations')}
-                          className="text-xs font-medium text-zinc-900 bg-zinc-100 hover:bg-zinc-200 px-3 py-1.5 rounded-md transition inline-flex items-center gap-1.5 cursor-pointer"
+                          className="text-xs font-medium text-[#12181B] bg-[#F2EFE9] hover:bg-[#EAE6DD] border border-[#E4E1D8] px-3 py-1.5 rounded-lg transition inline-flex items-center gap-1.5 cursor-pointer"
                         >
-                          <BookOpen className="w-3.5 h-3.5 text-zinc-700" />
+                          <BookOpen className="w-3.5 h-3.5 text-[#1F6F5C]" />
                           <span>Start Roadmap</span>
-                          <ArrowRight className="w-3 h-3 text-zinc-500" />
+                          <ArrowRight className="w-3 h-3 text-[#5B6670]" />
                         </button>
 
                         <a
                           href={resource.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs text-zinc-500 hover:text-zinc-900 inline-flex items-center gap-1 font-medium group"
+                          className="text-xs text-[#5B6670] hover:text-[#1F6F5C] inline-flex items-center gap-1 font-medium group"
                         >
                           <span>{resource.label}</span>
-                          <ExternalLink className="w-3 h-3 text-zinc-400 group-hover:text-zinc-900 transition-colors" />
+                          <ExternalLink className="w-3 h-3 text-[#5B6670] group-hover:text-[#1F6F5C] transition-colors" />
                         </a>
                       </div>
                     </div>
@@ -489,21 +489,21 @@ function SkillGapPanel({
             </div>
           )}
 
-          {/* SECTION 2: MEDIUM & SUPPORTING GAPS (Compact Structured Rows - Not Big Cards) */}
+          {/* SECTION 2: MEDIUM & SUPPORTING GAPS */}
           {(activeFilter === 'all' || activeFilter === 'medium') &&
             mediumAndSupportingGaps.length > 0 && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between px-1">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-amber-500" />
-                    <h3 className="text-xs font-mono uppercase tracking-wider text-zinc-900 font-semibold">
+                    <span className="w-2 h-2 rounded-full bg-[#8C5819]" />
+                    <h3 className="font-mono text-xs uppercase tracking-widest text-[#12181B] font-medium">
                       Supporting Technical Gaps ({mediumAndSupportingGaps.length})
                     </h3>
                   </div>
-                  <span className="text-[11px] text-zinc-500">Secondary requirements & tooling</span>
+                  <span className="text-[11px] text-[#5B6670]">Secondary requirements & tooling</span>
                 </div>
 
-                <div className="bg-white border border-zinc-200 rounded-xl divide-y divide-zinc-100 shadow-xs overflow-hidden">
+                <div className="bg-white border border-[#E4E1D8] rounded-2xl divide-y divide-[#E4E1D8] shadow-xs overflow-hidden">
                   {mediumAndSupportingGaps.map((skill) => {
                     const priority = priorityMap[skill] || 'Medium';
                     const domain = getSkillDomain(skill);
@@ -514,34 +514,34 @@ function SkillGapPanel({
                     return (
                       <div
                         key={skill}
-                        className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-zinc-50/80 transition"
+                        className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-[#FBFAF6] transition"
                       >
                         <div className="flex items-start sm:items-center gap-3">
-                          <div className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 sm:mt-0 shrink-0" />
+                          <div className="w-1.5 h-1.5 rounded-full bg-[#8C5819] mt-1.5 sm:mt-0 shrink-0" />
                           <div>
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-xs font-semibold text-zinc-900">{skill}</span>
-                              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-zinc-100 text-zinc-600 border border-zinc-200">
+                              <span className="text-xs font-semibold text-[#12181B]">{skill}</span>
+                              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-[#F2EFE9] text-[#5B6670] border border-[#E4E1D8]">
                                 {domain}
                               </span>
                               {getPriorityBadge(priority)}
                             </div>
-                            <p className="text-xs text-zinc-500 mt-1 leading-relaxed">{reason}</p>
+                            <p className="text-xs text-[#5B6670] mt-1 leading-relaxed">{reason}</p>
                           </div>
                         </div>
 
                         <div className="flex items-center gap-3 shrink-0 self-end sm:self-auto pl-4 sm:pl-0">
-                          <span className="text-[11px] font-mono text-zinc-400 hidden md:inline">
+                          <span className="text-[11px] font-mono text-[#5B6670] hidden md:inline">
                             Est: {estimate.time}
                           </span>
                           <a
                             href={resource.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-xs font-medium text-zinc-700 hover:text-zinc-900 bg-white border border-zinc-200 px-2.5 py-1 rounded-md hover:bg-zinc-50 inline-flex items-center gap-1 shadow-xs transition"
+                            className="text-xs font-medium text-[#12181B] hover:text-[#1F6F5C] bg-white border border-[#E4E1D8] px-3 py-1.5 rounded-lg hover:bg-[#F2EFE9] inline-flex items-center gap-1 shadow-xs transition"
                           >
                             <span>Open Docs</span>
-                            <ExternalLink className="w-3 h-3 text-zinc-400" />
+                            <ExternalLink className="w-3 h-3 text-[#5B6670]" />
                           </a>
                         </div>
                       </div>
@@ -551,23 +551,23 @@ function SkillGapPanel({
               </div>
             )}
 
-          {/* SECTION 3: VERIFIED COMPETENCIES (Skills Already Present on Resume) */}
+          {/* SECTION 3: VERIFIED COMPETENCIES */}
           {(activeFilter === 'all' || activeFilter === 'verified') &&
             verifiedBenchmarkSkills.length > 0 && (
               <div className="space-y-3">
                 <div className="flex items-center justify-between px-1">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                    <h3 className="text-xs font-mono uppercase tracking-wider text-zinc-900 font-semibold">
+                    <span className="w-2 h-2 rounded-full bg-[#1F6F5C]" />
+                    <h3 className="font-mono text-xs uppercase tracking-widest text-[#12181B] font-medium">
                       Verified Benchmark Competencies ({verifiedBenchmarkSkills.length})
                     </h3>
                   </div>
-                  <span className="text-[11px] text-zinc-500">
+                  <span className="text-[11px] text-[#5B6670]">
                     Detected in uploaded resume & projects
                   </span>
                 </div>
 
-                <div className="bg-white border border-zinc-200 rounded-xl divide-y divide-zinc-100 shadow-xs overflow-hidden">
+                <div className="bg-white border border-[#E4E1D8] rounded-2xl divide-y divide-[#E4E1D8] shadow-xs overflow-hidden">
                   {verifiedBenchmarkSkills.map((skill) => {
                     const domain = getSkillDomain(skill);
                     const resource = getSkillResource(skill);
@@ -575,34 +575,32 @@ function SkillGapPanel({
                     return (
                       <div
                         key={skill}
-                        className="p-3.5 sm:px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-zinc-50/50 transition"
+                        className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 hover:bg-[#FBFAF6] transition"
                       >
                         <div className="flex items-center gap-3">
-                          <div className="w-5 h-5 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shrink-0">
-                            <Check className="w-3 h-3" />
-                          </div>
+                          <Check className="w-4 h-4 text-[#1F6F5C] shrink-0" />
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="text-xs font-medium text-zinc-900">{skill}</span>
-                              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-zinc-100 text-zinc-600 border border-zinc-200">
+                              <span className="text-xs font-medium text-[#12181B]">{skill}</span>
+                              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-[#F2EFE9] text-[#5B6670] border border-[#E4E1D8]">
                                 {domain}
                               </span>
                             </div>
-                            <p className="text-[11px] text-emerald-800 mt-0.5">
+                            <p className="text-[11px] text-[#5B6670] mt-0.5">
                               Verified competency matched to {targetRoleName} benchmark
                             </p>
                           </div>
                         </div>
 
                         <div className="flex items-center gap-2 self-end sm:self-auto">
-                          <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded border font-medium bg-emerald-50 text-emerald-700 border-emerald-200">
+                          <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-md border font-medium bg-[#EBF3F0] text-[#1F6F5C] border-[#CDE3DC]">
                             Verified
                           </span>
                           <a
                             href={resource.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-xs text-zinc-400 hover:text-zinc-700 p-1"
+                            className="text-xs text-[#5B6670] hover:text-[#1F6F5C] p-1"
                             title="Reference documentation"
                           >
                             <ExternalLink className="w-3.5 h-3.5" />

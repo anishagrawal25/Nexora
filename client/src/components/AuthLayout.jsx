@@ -1,23 +1,23 @@
 import { Link } from 'react-router-dom';
-import { Sparkles, ShieldCheck } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 function AuthLayout({ children }) {
   return (
-    <div className="min-h-screen bg-[#FAFAFA] flex flex-col justify-between font-sans selection:bg-zinc-200">
+    <div className="min-h-screen bg-[#FBFAF6] flex flex-col justify-between font-sans selection:bg-[#EBF3F0] selection:text-[#1F6F5C]">
       {/* Minimal Top Header */}
       <header className="px-6 py-5">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-7 h-7 rounded-md bg-zinc-900 flex items-center justify-center text-white shadow-xs group-hover:bg-zinc-800 transition">
-              <Sparkles className="w-4 h-4 text-zinc-300" />
+          <Link to="/" className="flex items-center gap-2.5 group">
+            <div className="w-7 h-7 rounded-lg bg-[#1F6F5C] flex items-center justify-center text-white shadow-xs group-hover:bg-[#185849] transition">
+              <Sparkles className="w-3.5 h-3.5 text-white/90" />
             </div>
-            <span className="font-mono text-xs tracking-widest font-semibold text-zinc-900 uppercase">
+            <span className="font-mono text-xs tracking-widest font-semibold text-[#12181B] uppercase">
               NEXORA
             </span>
           </Link>
           <Link
             to="/"
-            className="text-xs text-zinc-500 hover:text-zinc-900 transition font-medium"
+            className="text-xs text-[#5B6670] hover:text-[#12181B] transition font-medium"
           >
             ← Back to overview
           </Link>
@@ -30,7 +30,7 @@ function AuthLayout({ children }) {
       </main>
 
       {/* Subtle Footer */}
-      <footer className="py-6 px-6 border-t border-zinc-200 text-center text-xs text-zinc-400 font-mono">
+      <footer className="py-6 px-6 border-t border-[#E4E1D8] text-center text-xs text-[#5B6670] font-mono">
         Nexora Career Readiness Platform • Secure Evaluation
       </footer>
     </div>

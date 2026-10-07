@@ -151,7 +151,7 @@ function Combobox({
           onKeyDown={handleKeyDown}
           disabled={disabled}
           placeholder={placeholder}
-          className={`w-full bg-white border border-zinc-200 text-zinc-900 placeholder:text-zinc-400 rounded-lg px-3 py-2 pr-8 text-xs sm:text-sm font-normal shadow-xs focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-500/20 transition disabled:bg-zinc-50 disabled:text-zinc-400 disabled:cursor-not-allowed ${inputClassName}`}
+          className={`w-full bg-white border border-[#E4E1D8] text-[#12181B] placeholder:text-[#5B6670]/60 rounded-xl px-3.5 py-2 pr-8 text-xs sm:text-sm font-normal shadow-xs focus:outline-none focus:border-[#1F6F5C] focus:ring-2 focus:ring-[#1F6F5C]/15 transition disabled:bg-[#F2EFE9] disabled:text-[#5B6670] disabled:cursor-not-allowed ${inputClassName}`}
         />
         <button
           type="button"
@@ -159,11 +159,11 @@ function Combobox({
           disabled={disabled}
           tabIndex={-1}
           aria-label="Toggle options list"
-          className="absolute right-2 p-1 text-zinc-400 hover:text-zinc-700 transition cursor-pointer disabled:cursor-not-allowed"
+          className="absolute right-2 p-1 text-[#5B6670] hover:text-[#12181B] transition cursor-pointer disabled:cursor-not-allowed"
         >
           <ChevronDown
             className={`w-3.5 h-3.5 transition-transform duration-150 ${
-              isOpen ? 'rotate-180 text-indigo-600' : ''
+              isOpen ? 'rotate-180 text-[#1F6F5C]' : ''
             }`}
           />
         </button>
@@ -171,7 +171,7 @@ function Combobox({
 
       {/* Dropdown Menu Overlay */}
       {isOpen && !disabled && (
-        <div className="absolute z-50 left-0 right-0 mt-1.5 bg-white border border-zinc-200 rounded-lg shadow-lg max-h-56 overflow-y-auto py-1 divide-y divide-zinc-100">
+        <div className="absolute z-50 left-0 right-0 mt-1.5 bg-white border border-[#E4E1D8] rounded-xl shadow-lg max-h-56 overflow-y-auto py-1 divide-y divide-[#E4E1D8]/60">
           <div className="p-1 space-y-0.5">
             {filteredOptions.length > 0 ? (
               filteredOptions.map((opt, index) => {
@@ -185,17 +185,17 @@ function Combobox({
                     type="button"
                     onClick={() => handleSelectOption(opt)}
                     onMouseEnter={() => setHighlightedIndex(index)}
-                    className={`w-full text-left px-2.5 py-1.5 text-xs sm:text-sm rounded-md flex items-center justify-between transition cursor-pointer ${
-                      isHighlighted ? 'bg-indigo-50/70 text-indigo-950' : 'text-zinc-700'
-                    } ${isSelected ? 'font-medium bg-indigo-50 text-indigo-900' : ''}`}
+                    className={`w-full text-left px-2.5 py-1.5 text-xs sm:text-sm rounded-lg flex items-center justify-between transition cursor-pointer ${
+                      isHighlighted ? 'bg-[#EBF3F0]/60 text-[#12181B]' : 'text-[#12181B]'
+                    } ${isSelected ? 'font-medium bg-[#EBF3F0] text-[#1F6F5C]' : ''}`}
                   >
                     <span className="truncate">{opt.name}</span>
-                    {isSelected && <Check className="w-3.5 h-3.5 text-indigo-600 shrink-0 ml-2" />}
+                    {isSelected && <Check className="w-3.5 h-3.5 text-[#1F6F5C] shrink-0 ml-2" />}
                   </button>
                 );
               })
             ) : (
-              <div className="px-3 py-2 text-xs text-zinc-500">
+              <div className="px-3 py-2 text-xs text-[#5B6670]">
                 No matching suggestions
               </div>
             )}
@@ -210,9 +210,9 @@ function Combobox({
                   setIsOpen(false);
                   if (onChange) onChange(inputValue, null);
                 }}
-                className="w-full text-left px-2.5 py-1.5 text-xs rounded-md bg-zinc-50 hover:bg-zinc-100 text-zinc-900 font-medium flex items-center gap-1.5 transition cursor-pointer"
+                className="w-full text-left px-2.5 py-1.5 text-xs rounded-lg bg-[#F2EFE9] hover:bg-[#EAE6DD] text-[#12181B] font-medium flex items-center gap-1.5 transition cursor-pointer"
               >
-                <Sparkles className="w-3 h-3 text-zinc-500 shrink-0" />
+                <Sparkles className="w-3 h-3 text-[#1F6F5C] shrink-0" />
                 <span className="truncate">
                   Custom: <strong>&quot;{inputValue.trim()}&quot;</strong> (estimate guidance)
                 </span>

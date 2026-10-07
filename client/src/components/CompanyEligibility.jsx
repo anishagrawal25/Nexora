@@ -91,16 +91,16 @@ function CompanyEligibility({ profile }) {
   return (
     <div className="space-y-6">
       {/* SECTION 1: Single Company Checker */}
-      <div className="bg-white border border-zinc-200 rounded-xl p-6 sm:p-7 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-zinc-200">
+      <div className="bg-white border border-[#E4E1D8] rounded-2xl p-6 sm:p-7 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#E4E1D8]">
           <div>
-            <span className="text-[11px] font-mono tracking-wider text-zinc-500 uppercase font-medium">
+            <span className="font-mono text-xs uppercase tracking-widest text-[#1F6F5C] font-medium">
               CRITERIA EVALUATOR
             </span>
-            <h2 className="text-lg sm:text-xl font-semibold text-zinc-900 tracking-tight mt-0.5">
+            <h2 className="font-serif italic text-xl sm:text-2xl font-medium text-[#12181B] tracking-tight mt-0.5">
               Check a company
             </h2>
-            <p className="text-xs text-zinc-500 mt-1">
+            <p className="text-xs text-[#5B6670] mt-1">
               Verify your academic profile and skills against hiring criteria and recruitment filters.
             </p>
           </div>
@@ -122,7 +122,7 @@ function CompanyEligibility({ profile }) {
         </div>
 
         {error && (
-          <div className="mt-4 p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700">
+          <div className="mt-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700">
             {error}
           </div>
         )}
@@ -130,34 +130,34 @@ function CompanyEligibility({ profile }) {
         {/* Selected Company Result Card */}
         {evaluation && (
           <div className="mt-5">
-            <div className="p-5 rounded-lg bg-zinc-50/70 border border-zinc-200/80">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-zinc-200">
+            <div className="p-5 rounded-xl bg-[#FBFAF6] border border-[#E4E1D8]">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#E4E1D8]">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-white border border-zinc-200 flex items-center justify-center text-zinc-700 shadow-xs">
-                    <Building2 className="w-4 h-4" />
+                  <div className="w-9 h-9 rounded-xl bg-white border border-[#E4E1D8] flex items-center justify-center text-[#12181B] shadow-xs">
+                    <Building2 className="w-4 h-4 text-[#1F6F5C]" />
                   </div>
                   <div>
-                    <h3 className="text-base font-semibold text-zinc-900 flex items-center gap-2">
+                    <h3 className="text-base font-semibold text-[#12181B] flex items-center gap-2">
                       <span>{evaluation.company}</span>
                       {evaluation.isEstimate && (
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-100/80 text-amber-900 border border-amber-200 font-medium">
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-[#FEF6E9] text-[#8C5819] border border-[#F6E0B8] font-medium">
                           Estimate
                         </span>
                       )}
                     </h3>
-                    <p className="text-[11px] text-zinc-500">Hiring Criteria Assessment</p>
+                    <p className="text-[11px] text-[#5B6670]">Hiring Criteria Assessment</p>
                   </div>
                 </div>
 
                 <div>
                   {evaluation.eligible ? (
-                    <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono text-xs font-semibold px-2.5 py-1 rounded-md">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <span className="inline-flex items-center gap-1.5 bg-[#EBF3F0] text-[#1F6F5C] border border-[#CDE3DC] font-mono text-xs font-semibold px-2.5 py-1 rounded-lg">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#1F6F5C]" />
                       ELIGIBLE TO APPLY
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1.5 bg-rose-50 text-rose-800 border border-rose-200 font-mono text-xs font-semibold px-2.5 py-1 rounded-md">
-                      <XCircle className="w-3.5 h-3.5 text-rose-600" />
+                    <span className="inline-flex items-center gap-1.5 bg-[#FDF0ED] text-[#9E2A2B] border border-[#F5CAC3] font-mono text-xs font-semibold px-2.5 py-1 rounded-lg">
+                      <XCircle className="w-3.5 h-3.5 text-[#9E2A2B]" />
                       NOT CURRENTLY ELIGIBLE
                     </span>
                   )}
@@ -166,8 +166,8 @@ function CompanyEligibility({ profile }) {
 
               {/* Estimate Note Disclaimer Banner */}
               {evaluation.isEstimate && (
-                <div className="mt-4 p-3 rounded-lg bg-amber-50/70 border border-amber-200 text-xs text-amber-900 flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 shrink-0 text-amber-700" />
+                <div className="mt-4 p-3.5 rounded-xl bg-[#FEF6E9] border border-[#F6E0B8] text-xs text-[#8C5819] flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 shrink-0 text-[#8C5819]" />
                   <span>
                     {evaluation.note ||
                       `General guidance — we don't have specific data for '${evaluation.company}' yet.`}
@@ -178,24 +178,24 @@ function CompanyEligibility({ profile }) {
               {/* Criteria Breakdown Grid */}
               <div className="grid sm:grid-cols-3 gap-3.5 mt-4">
                 {/* CGPA Criterion */}
-                <div className="p-3.5 bg-white border border-zinc-200 rounded-lg shadow-xs">
+                <div className="p-4 bg-white border border-[#E4E1D8] rounded-xl shadow-xs">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-zinc-500 font-medium">Minimum CGPA</span>
+                    <span className="text-xs text-[#5B6670] font-medium">Minimum CGPA</span>
                     {evaluation.meetsCgpa ? (
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      <CheckCircle2 className="w-4 h-4 text-[#1F6F5C]" />
                     ) : (
-                      <XCircle className="w-4 h-4 text-rose-500" />
+                      <XCircle className="w-4 h-4 text-[#9E2A2B]" />
                     )}
                   </div>
                   <div className="flex items-baseline gap-1.5">
-                    <span className="text-sm font-semibold font-mono text-zinc-900">
+                    <span className="text-sm font-semibold font-mono text-[#12181B]">
                       {profile?.cgpa || 'Not set'}
                     </span>
-                    <span className="text-xs font-mono text-zinc-400">
+                    <span className="text-xs font-mono text-[#5B6670]">
                       / Req: {evaluation.minimumCgpa ?? 'N/A'}
                     </span>
                   </div>
-                  <p className="text-[11px] text-zinc-500 mt-1">
+                  <p className="text-[11px] text-[#5B6670] mt-1">
                     {evaluation.meetsCgpa
                       ? 'CGPA requirement satisfied'
                       : 'CGPA below minimum cutoff'}
@@ -203,24 +203,24 @@ function CompanyEligibility({ profile }) {
                 </div>
 
                 {/* Grad Year Criterion */}
-                <div className="p-3.5 bg-white border border-zinc-200 rounded-lg shadow-xs">
+                <div className="p-4 bg-white border border-[#E4E1D8] rounded-xl shadow-xs">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-zinc-500 font-medium">Batch / Grad Year</span>
+                    <span className="text-xs text-[#5B6670] font-medium">Batch / Grad Year</span>
                     {evaluation.meetsGradYear ? (
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      <CheckCircle2 className="w-4 h-4 text-[#1F6F5C]" />
                     ) : (
-                      <XCircle className="w-4 h-4 text-rose-500" />
+                      <XCircle className="w-4 h-4 text-[#9E2A2B]" />
                     )}
                   </div>
                   <div className="flex items-baseline gap-1.5">
-                    <span className="text-sm font-semibold font-mono text-zinc-900">
+                    <span className="text-sm font-semibold font-mono text-[#12181B]">
                       {profile?.grad_year || 'Not set'}
                     </span>
-                    <span className="text-xs font-mono text-zinc-400">
+                    <span className="text-xs font-mono text-[#5B6670]">
                       / Min: {evaluation.minimumGradYear ?? 'N/A'}
                     </span>
                   </div>
-                  <p className="text-[11px] text-zinc-500 mt-1">
+                  <p className="text-[11px] text-[#5B6670] mt-1">
                     {evaluation.meetsGradYear
                       ? 'Graduation batch eligible'
                       : 'Graduation year ineligible'}
@@ -228,24 +228,24 @@ function CompanyEligibility({ profile }) {
                 </div>
 
                 {/* Skills Match Criterion */}
-                <div className="p-3.5 bg-white border border-zinc-200 rounded-lg shadow-xs">
+                <div className="p-4 bg-white border border-[#E4E1D8] rounded-xl shadow-xs">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-zinc-500 font-medium">Mandatory Skills</span>
+                    <span className="text-xs text-[#5B6670] font-medium">Mandatory Skills</span>
                     {evaluation.missingSkills?.length === 0 ? (
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      <CheckCircle2 className="w-4 h-4 text-[#1F6F5C]" />
                     ) : (
-                      <XCircle className="w-4 h-4 text-rose-500" />
+                      <XCircle className="w-4 h-4 text-[#9E2A2B]" />
                     )}
                   </div>
                   <div className="flex items-baseline gap-1.5">
-                    <span className="text-sm font-semibold font-mono text-zinc-900">
+                    <span className="text-sm font-semibold font-mono text-[#12181B]">
                       {(evaluation.requiredSkills?.length || 0) -
                         (evaluation.missingSkills?.length || 0)}
                       /{evaluation.requiredSkills?.length || 0}
                     </span>
-                    <span className="text-xs text-zinc-400 font-mono">Matched</span>
+                    <span className="text-xs text-[#5B6670] font-mono">Matched</span>
                   </div>
-                  <p className="text-[11px] text-zinc-500 mt-1">
+                  <p className="text-[11px] text-[#5B6670] mt-1">
                     {evaluation.missingSkills?.length === 0
                       ? 'All required skills verified'
                       : `${evaluation.missingSkills?.length} mandatory skill(s) missing`}
@@ -255,8 +255,8 @@ function CompanyEligibility({ profile }) {
 
               {/* Required Skills Chips */}
               {evaluation.requiredSkills && evaluation.requiredSkills.length > 0 && (
-                <div className="mt-4 pt-3.5 border-t border-zinc-200">
-                  <p className="text-xs text-zinc-600 mb-2 font-medium">
+                <div className="mt-4 pt-3.5 border-t border-[#E4E1D8]">
+                  <p className="text-xs text-[#5B6670] mb-2 font-medium">
                     Required Skill Verification:
                   </p>
                   <div className="flex flex-wrap gap-1.5">
@@ -265,16 +265,16 @@ function CompanyEligibility({ profile }) {
                       return (
                         <span
                           key={skill}
-                          className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-md border font-medium ${
+                          className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg border font-medium ${
                             isMissing
-                              ? 'bg-rose-50 text-rose-800 border-rose-200 line-through opacity-75'
-                              : 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                              ? 'bg-[#FDF0ED] text-[#9E2A2B] border-[#F5CAC3] line-through opacity-75'
+                              : 'bg-[#EBF3F0] text-[#1F6F5C] border-[#CDE3DC]'
                           }`}
                         >
                           {isMissing ? (
-                            <XCircle className="w-3 h-3 text-rose-500" />
+                            <XCircle className="w-3 h-3 text-[#9E2A2B]" />
                           ) : (
-                            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                            <CheckCircle2 className="w-3 h-3 text-[#1F6F5C]" />
                           )}
                           {skill}
                         </span>
@@ -289,38 +289,38 @@ function CompanyEligibility({ profile }) {
       </div>
 
       {/* SECTION 2: "Which companies fit you?" (Reverse Match) */}
-      <div className="bg-white border border-zinc-200 rounded-xl p-6 sm:p-7 shadow-xs">
-        <div className="pb-5 border-b border-zinc-200">
-          <span className="text-[11px] font-mono tracking-wider text-zinc-500 uppercase font-medium">
+      <div className="bg-white border border-[#E4E1D8] rounded-2xl p-6 sm:p-7 shadow-xs">
+        <div className="pb-5 border-b border-[#E4E1D8]">
+          <span className="font-mono text-xs uppercase tracking-widest text-[#1F6F5C] font-medium">
             REVERSE MATCH
           </span>
           <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mt-0.5">
-            <h2 className="text-lg sm:text-xl font-semibold text-zinc-900 tracking-tight">
+            <h2 className="font-serif italic text-xl sm:text-2xl font-medium text-[#12181B] tracking-tight">
               See where you already stand
             </h2>
-            <p className="text-xs text-zinc-500">
-              Automated comparison across all {matches.length || 15} tracked companies
+            <p className="text-xs text-[#5B6670]">
+              Automated comparison across all {matches.length || companies.length || 0} tracked companies
             </p>
           </div>
 
           {/* Group Filter Tabs: Qualify Now / Close / Not Yet / All */}
-          <div className="flex flex-wrap items-center gap-1.5 mt-4">
+          <div className="flex flex-wrap items-center gap-1 bg-[#F2EFE9] p-1 rounded-xl border border-[#E4E1D8] mt-4">
             <button
               onClick={() => setActiveGroup('all')}
-              className={`text-xs px-3 py-1.5 rounded-lg border font-medium transition cursor-pointer ${
+              className={`text-xs px-3 py-1.5 rounded-lg font-medium transition cursor-pointer ${
                 activeGroup === 'all'
-                  ? 'bg-zinc-900 text-white border-zinc-900 shadow-xs'
-                  : 'bg-white text-zinc-600 border-zinc-200 hover:bg-zinc-50 hover:text-zinc-900'
+                  ? 'bg-white text-[#12181B] shadow-xs font-semibold'
+                  : 'text-[#5B6670] hover:text-[#12181B]'
               }`}
             >
-              All Companies ({matches.length})
+              All Companies ({matches.length || companies.length || 0})
             </button>
             <button
               onClick={() => setActiveGroup('qualify')}
-              className={`text-xs px-3 py-1.5 rounded-lg border font-medium transition cursor-pointer inline-flex items-center gap-1.5 ${
+              className={`text-xs px-3 py-1.5 rounded-lg font-medium transition cursor-pointer inline-flex items-center gap-1.5 ${
                 activeGroup === 'qualify'
-                  ? 'bg-emerald-800 text-white border-emerald-800 shadow-xs'
-                  : 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100'
+                  ? 'bg-white text-[#1F6F5C] shadow-xs font-semibold'
+                  : 'text-[#5B6670] hover:text-[#1F6F5C]'
               }`}
             >
               <CheckCircle2 className="w-3.5 h-3.5" />
@@ -328,10 +328,10 @@ function CompanyEligibility({ profile }) {
             </button>
             <button
               onClick={() => setActiveGroup('close')}
-              className={`text-xs px-3 py-1.5 rounded-lg border font-medium transition cursor-pointer inline-flex items-center gap-1.5 ${
+              className={`text-xs px-3 py-1.5 rounded-lg font-medium transition cursor-pointer inline-flex items-center gap-1.5 ${
                 activeGroup === 'close'
-                  ? 'bg-amber-800 text-white border-amber-800 shadow-xs'
-                  : 'bg-amber-50 text-amber-900 border-amber-200 hover:bg-amber-100'
+                  ? 'bg-white text-[#8C5819] shadow-xs font-semibold'
+                  : 'text-[#5B6670] hover:text-[#8C5819]'
               }`}
             >
               <Sparkles className="w-3.5 h-3.5" />
@@ -339,10 +339,10 @@ function CompanyEligibility({ profile }) {
             </button>
             <button
               onClick={() => setActiveGroup('not_yet')}
-              className={`text-xs px-3 py-1.5 rounded-lg border font-medium transition cursor-pointer inline-flex items-center gap-1.5 ${
+              className={`text-xs px-3 py-1.5 rounded-lg font-medium transition cursor-pointer inline-flex items-center gap-1.5 ${
                 activeGroup === 'not_yet'
-                  ? 'bg-zinc-800 text-white border-zinc-800 shadow-xs'
-                  : 'bg-zinc-100 text-zinc-600 border-zinc-200 hover:bg-zinc-200'
+                  ? 'bg-white text-[#12181B] shadow-xs font-semibold'
+                  : 'text-[#5B6670] hover:text-[#12181B]'
               }`}
             >
               <XCircle className="w-3.5 h-3.5" />
@@ -352,45 +352,45 @@ function CompanyEligibility({ profile }) {
         </div>
 
         {/* Compact Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 mt-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
           {displayedMatches.map((m) => {
             const isSelected = selectedCompanyName.toLowerCase() === m.company.toLowerCase();
 
             return (
               <div
                 key={m.companyId + m.company}
-                className={`p-4 rounded-lg border transition flex flex-col justify-between ${
+                className={`p-5 rounded-2xl border transition flex flex-col justify-between ${
                   isSelected
-                    ? 'border-zinc-900 bg-white ring-1 ring-zinc-900 shadow-xs'
-                    : 'border-zinc-200 bg-zinc-50/50 hover:bg-white hover:border-zinc-300'
+                    ? 'border-[#1F6F5C] bg-white ring-1 ring-[#1F6F5C] shadow-xs'
+                    : 'border-[#E4E1D8] bg-[#FBFAF6] hover:bg-white hover:border-[#1F6F5C]/40'
                 }`}
               >
                 <div>
                   <div className="flex items-center justify-between gap-2 mb-2">
-                    <h4 className="text-sm font-semibold text-zinc-900">
+                    <h4 className="text-sm font-semibold text-[#12181B]">
                       {m.company}
                     </h4>
 
                     {m.tier === 'qualify' ? (
-                      <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 text-[11px] font-mono font-medium px-2 py-0.5 rounded">
-                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                      <span className="inline-flex items-center gap-1 bg-[#EBF3F0] text-[#1F6F5C] border border-[#CDE3DC] text-[11px] font-mono font-medium px-2 py-0.5 rounded-md">
+                        <CheckCircle2 className="w-3 h-3 text-[#1F6F5C]" />
                         Qualify Now
                       </span>
                     ) : m.tier === 'close' ? (
-                      <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-900 text-[11px] font-mono font-medium px-2 py-0.5 rounded">
-                        <Sparkles className="w-3 h-3 text-amber-700" />
+                      <span className="inline-flex items-center gap-1 bg-[#FEF6E9] text-[#8C5819] border border-[#F6E0B8] text-[11px] font-mono font-medium px-2 py-0.5 rounded-md">
+                        <Sparkles className="w-3 h-3 text-[#8C5819]" />
                         Close (1-2 Gaps)
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 bg-zinc-200/80 text-zinc-700 text-[11px] font-mono font-medium px-2 py-0.5 rounded">
-                        <XCircle className="w-3 h-3 text-zinc-500" />
+                      <span className="inline-flex items-center gap-1 bg-[#F2EFE9] text-[#5B6670] border border-[#E4E1D8] text-[11px] font-mono font-medium px-2 py-0.5 rounded-md">
+                        <XCircle className="w-3 h-3 text-[#5B6670]" />
                         Not Yet
                       </span>
                     )}
                   </div>
 
                   {/* Cutoff Criteria Specs */}
-                  <div className="flex items-center gap-2 text-xs text-zinc-500 font-mono mb-3">
+                  <div className="flex items-center gap-2 text-xs text-[#5B6670] font-mono mb-3">
                     <span>CGPA: {m.minimumCgpa || 'N/A'}</span>
                     <span>•</span>
                     <span>Batch: {m.minimumGradYear || 'N/A'}+</span>
@@ -402,18 +402,18 @@ function CompanyEligibility({ profile }) {
 
                   {/* Specific granular unmet reasons */}
                   {m.unmetReasons && m.unmetReasons.length > 0 ? (
-                    <div className="space-y-1 mb-3 bg-white p-2.5 rounded-md border border-zinc-200/80">
+                    <div className="space-y-1 mb-3 bg-white p-3 rounded-xl border border-[#E4E1D8]">
                       {m.unmetReasons.map((reason, i) => (
-                        <p key={i} className="text-[11px] text-rose-700 flex items-start gap-1.5 leading-snug">
-                          <span className="mt-0.5 text-rose-500 shrink-0">•</span>
+                        <p key={i} className="text-[11px] text-[#9E2A2B] flex items-start gap-1.5 leading-snug">
+                          <span className="mt-0.5 text-[#9E2A2B] shrink-0">•</span>
                           <span>{reason}</span>
                         </p>
                       ))}
                     </div>
                   ) : (
-                    <div className="mb-3 bg-emerald-50/70 p-2.5 rounded-md border border-emerald-200">
-                      <p className="text-[11px] text-emerald-800 font-medium flex items-center gap-1.5">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <div className="mb-3 bg-[#EBF3F0] p-3 rounded-xl border border-[#CDE3DC]">
+                      <p className="text-[11px] text-[#1F6F5C] font-medium flex items-center gap-1.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#1F6F5C] shrink-0" />
                         All academic and skill criteria satisfied
                       </p>
                     </div>
@@ -421,7 +421,7 @@ function CompanyEligibility({ profile }) {
                 </div>
 
                 {/* Bottom Action */}
-                <div className="pt-2 flex items-center justify-end border-t border-zinc-100">
+                <div className="pt-3 flex items-center justify-end border-t border-[#E4E1D8]">
                   <button
                     type="button"
                     onClick={() => {
@@ -429,7 +429,7 @@ function CompanyEligibility({ profile }) {
                       fetchCompanyEligibility(m.company);
                       window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
-                    className="text-xs font-medium text-zinc-700 hover:text-zinc-900 inline-flex items-center gap-1 hover:underline cursor-pointer"
+                    className="text-xs font-medium text-[#12181B] hover:text-[#1F6F5C] inline-flex items-center gap-1 hover:underline cursor-pointer"
                   >
                     <span>Check detailed criteria</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -445,4 +445,3 @@ function CompanyEligibility({ profile }) {
 }
 
 export default CompanyEligibility;
-

@@ -86,42 +86,17 @@ function ResumeUpload({ onAnalysisComplete }) {
   const isBusy = uploading || analyzing;
 
   return (
-    <div className="bg-white border border-slate-200/90 rounded-xl p-6 sm:p-8 shadow-xs">
+    <div className="bg-white border border-[#E4E1D8] rounded-2xl p-6 sm:p-8 shadow-xs">
       <div className="max-w-2xl mx-auto">
-        {/* Subtle Product Workflow Track (Not a giant infographic) */}
-        <div className="mb-7 pb-5 border-b border-slate-100 flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2">
-            <span className="w-5 h-5 rounded-full bg-indigo-600 text-white font-mono text-[10px] font-semibold flex items-center justify-center shrink-0 shadow-xs">
-              01
-            </span>
-            <span className="font-semibold text-indigo-900">Upload PDF</span>
-          </div>
-
-          <div className="flex-1 max-w-[40px] sm:max-w-[60px] h-px bg-slate-200 mx-2" />
-
-          <div className="flex items-center gap-2">
-            <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-600 font-mono text-[10px] font-semibold flex items-center justify-center shrink-0 border border-slate-200">
-              02
-            </span>
-            <span className="text-zinc-600 hidden sm:inline">Target Role</span>
-          </div>
-
-          <div className="flex-1 max-w-[40px] sm:max-w-[60px] h-px bg-slate-200 mx-2" />
-
-          <div className="flex items-center gap-2">
-            <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-600 font-mono text-[10px] font-semibold flex items-center justify-center shrink-0 border border-slate-200">
-              03
-            </span>
-            <span className="text-zinc-600 hidden sm:inline">Gap Analysis</span>
-          </div>
-        </div>
-
         {/* Section Title */}
         <div className="text-center mb-6">
-          <h2 className="text-lg sm:text-xl font-semibold text-zinc-900 tracking-tight">
+          <span className="font-mono text-xs uppercase tracking-widest text-[#1F6F5C] font-medium block mb-1">
+            Resume Extraction
+          </span>
+          <h2 className="font-serif italic text-2xl font-medium text-[#12181B] tracking-tight">
             Upload Your Resume
           </h2>
-          <p className="text-xs sm:text-sm text-zinc-500 mt-1 max-w-md mx-auto">
+          <p className="text-xs sm:text-sm text-[#5B6670] mt-1 max-w-md mx-auto">
             Extract technical competencies, project depth, and experience signals to benchmark your
             placement readiness.
           </p>
@@ -143,24 +118,24 @@ function ResumeUpload({ onAnalysisComplete }) {
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             onClick={() => !isBusy && fileInputRef.current?.click()}
-            className={`border-2 border-dashed rounded-xl p-8 sm:p-10 text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-3.5 ${
+            className={`border-2 border-dashed rounded-2xl p-8 sm:p-10 text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-3.5 ${
               isDragging
-                ? 'border-indigo-500 bg-indigo-50/70 ring-4 ring-indigo-500/10'
+                ? 'border-[#1F6F5C] bg-[#EBF3F0]/60 ring-4 ring-[#1F6F5C]/10'
                 : file
-                ? 'border-indigo-300 bg-indigo-50/20'
-                : 'border-slate-200 bg-slate-50/50 hover:bg-indigo-50/30 hover:border-indigo-300 hover:shadow-xs'
+                ? 'border-[#1F6F5C]/40 bg-[#EBF3F0]/20'
+                : 'border-[#E4E1D8] bg-[#FBFAF6] hover:bg-[#EBF3F0]/30 hover:border-[#1F6F5C]/60 hover:shadow-xs'
             } ${isBusy ? 'pointer-events-none opacity-70' : ''}`}
           >
             {file ? (
-              <div className="flex items-center gap-3.5 w-full max-w-md bg-white border border-indigo-200 p-4 rounded-xl shadow-xs">
-                <div className="w-10 h-10 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
+              <div className="flex items-center gap-3.5 w-full max-w-md bg-white border border-[#E4E1D8] p-4 rounded-xl shadow-xs">
+                <div className="w-10 h-10 rounded-lg bg-[#EBF3F0] flex items-center justify-center text-[#1F6F5C] shrink-0">
                   <FileText className="w-5 h-5" />
                 </div>
                 <div className="flex-1 min-w-0 text-left">
-                  <p className="text-xs sm:text-sm font-semibold text-zinc-900 truncate">
+                  <p className="text-xs sm:text-sm font-semibold text-[#12181B] truncate">
                     {file.name}
                   </p>
-                  <p className="text-[11px] font-mono text-zinc-500 mt-0.5">
+                  <p className="text-[11px] font-mono text-[#5B6670] mt-0.5">
                     {(file.size / 1024 / 1024).toFixed(2)} MB • PDF Document
                   </p>
                 </div>
@@ -171,7 +146,7 @@ function ResumeUpload({ onAnalysisComplete }) {
                       e.stopPropagation();
                       setFile(null);
                     }}
-                    className="p-1.5 text-zinc-400 hover:text-zinc-700 hover:bg-slate-100 rounded-md transition cursor-pointer"
+                    className="p-1.5 text-[#5B6670] hover:text-[#12181B] hover:bg-[#F2EFE9] rounded-lg transition cursor-pointer"
                     title="Remove file"
                   >
                     <X className="w-4 h-4" />
@@ -180,74 +155,58 @@ function ResumeUpload({ onAnalysisComplete }) {
               </div>
             ) : (
               <>
-                <div className="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shadow-xs">
+                <div className="w-11 h-11 rounded-xl bg-[#EBF3F0] flex items-center justify-center text-[#1F6F5C]">
                   <Upload className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-xs sm:text-sm font-medium text-zinc-800">
-                    <span className="text-indigo-600 font-semibold hover:underline">
+                  <p className="text-xs sm:text-sm font-medium text-[#12181B]">
+                    <span className="text-[#1F6F5C] font-semibold hover:underline">
                       Click to browse
                     </span>{' '}
                     or drag and drop your PDF
                   </p>
-                  <p className="text-[11px] text-zinc-400 mt-1 font-mono">
-                    PDF document · Max file size 5.0 MB
+                  <p className="text-[11px] text-[#5B6670] mt-1 font-mono">
+                    Encrypted upload • PDF format up to 5.0 MB
                   </p>
-                </div>
-
-                {/* Supporting information tags */}
-                <div className="flex flex-wrap items-center justify-center gap-2 pt-2 border-t border-slate-200/60 w-full max-w-md">
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white text-zinc-600 border border-slate-200 flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                    ATS-Friendly Parsing
-                  </span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white text-zinc-600 border border-slate-200 flex items-center gap-1">
-                    <ShieldCheck className="w-3 h-3 text-indigo-600" />
-                    Encrypted & Confidential
-                  </span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white text-zinc-600 border border-slate-200 flex items-center gap-1">
-                    <Layers className="w-3 h-3 text-indigo-600" />
-                    Structured Extraction
-                  </span>
                 </div>
               </>
             )}
           </div>
 
           {error && (
-            <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-center gap-2">
+            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
-          {/* Primary CTA with Helpful Helper State */}
+          {/* Primary CTA */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
-            <p className="text-[11px] text-zinc-400 font-mono text-center sm:text-left">
+            <p className="text-[11px] text-[#5B6670] font-mono text-center sm:text-left">
               {file
                 ? 'Ready for extraction — click Start Resume Analysis.'
-                : 'Select or drop a PDF file above to begin analysis.'}
+                : 'Select or drop a PDF file above to begin evaluation.'}
             </p>
 
             <button
               type="submit"
               disabled={!file || isBusy}
-              className={`w-full sm:w-auto rounded-lg px-6 py-2.5 text-xs sm:text-sm font-semibold transition inline-flex items-center justify-center gap-2 cursor-pointer shadow-sm ${
+              className={`w-full sm:w-auto rounded-xl px-6 py-2.5 text-xs sm:text-sm font-medium transition inline-flex items-center justify-center gap-2 cursor-pointer shadow-sm ${
                 file && !isBusy
-                  ? 'bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white shadow-indigo-200/60'
-                  : 'bg-slate-100 text-zinc-400 border border-slate-200 cursor-not-allowed shadow-none'
+                  ? 'bg-[#1F6F5C] hover:bg-[#185849] active:bg-[#14493D] text-white'
+                  : 'bg-[#F2EFE9] text-[#5B6670]/60 border border-[#E4E1D8] cursor-not-allowed shadow-none'
               }`}
             >
               {isBusy ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin text-indigo-200" />
+                  <Loader2 className="w-4 h-4 animate-spin text-white/80" />
                   <span>{uploading ? 'Uploading PDF...' : 'Analyzing with Gemini...'}</span>
                 </>
               ) : (
                 <>
-                  <Sparkles className={`w-4 h-4 ${file ? 'text-indigo-200' : 'text-zinc-400'}`} />
+                  <Sparkles className={`w-4 h-4 ${file ? 'text-white/80' : 'text-[#5B6670]/50'}`} />
                   <span>Start Resume Analysis</span>
-                  <ArrowRight className={`w-3.5 h-3.5 ${file ? 'text-indigo-200' : 'text-zinc-400'}`} />
+                  <ArrowRight className={`w-3.5 h-3.5 ${file ? 'text-white/80' : 'text-[#5B6670]/50'}`} />
                 </>
               )}
             </button>
