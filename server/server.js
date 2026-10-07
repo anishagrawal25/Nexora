@@ -16,6 +16,7 @@ const { connectPostgres } = require("./config/postgres");
 const { connectMongo } = require("./config/mongo");
 const authRoutes = require("./routes/authRoutes");
 const profileRoutes = require("./routes/profileRoutes");
+const resumeRoutes = require("./routes/resumeRoutes");
 const { errorHandler } = require("./middleware/errorHandler");
 const path = require("path");
 const fs = require("fs");
@@ -76,7 +77,7 @@ app.get("/health", (req, res) => {
 
 // SPA fallback for frontend client routing when deployed together
 if (fs.existsSync(clientDistPath)) {
-  app.get("*", (req, res, next) => {
+  app.use((req, res, next) => {
     if (
       req.path.startsWith("/api") ||
       req.path.startsWith("/auth") ||

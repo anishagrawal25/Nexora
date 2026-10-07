@@ -11,6 +11,9 @@ if (process.env.DATABASE_URL) {
   try {
     realPool = new PoolClass({
       connectionString: process.env.DATABASE_URL,
+      connectionTimeoutMillis: 3000,
+      idleTimeoutMillis: 30000,
+      max: 10,
     });
   } catch (e) {
     console.warn("Could not instantiate PgPool:", e.message);
@@ -224,11 +227,30 @@ async function executeMemoryQuery(text, params = []) {
   return { rows: [] };
 }
 
+function queryWithTimeout(pool, text, params, timeoutMs = 3000) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`Query timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+
+    pool
+      .query(text, params)
+      .then((res) => {
+        clearTimeout(timer);
+        resolve(res);
+      })
+      .catch((err) => {
+        clearTimeout(timer);
+        reject(err);
+      });
+  });
+}
+
 const pgPool = {
   async query(text, params) {
     if (isPgConnected && realPool) {
       try {
-        return await realPool.query(text, params);
+        return await queryWithTimeout(realPool, text, params, 3000);
       } catch (err) {
         console.warn("Postgres query error, falling back to memory store:", err.message);
       }
