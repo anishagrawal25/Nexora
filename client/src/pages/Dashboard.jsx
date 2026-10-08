@@ -33,6 +33,17 @@ function calculateProfileCompleteness(profile) {
   return Math.round((filled / fields.length) * 100);
 }
 
+function isCompletedAnalysis(analysis) {
+  return (
+    typeof analysis?.readinessScore === 'number' &&
+    Number.isFinite(analysis.readinessScore) &&
+    Array.isArray(analysis.extractedSkills) &&
+    Array.isArray(analysis.strengths) &&
+    Array.isArray(analysis.weaknesses) &&
+    Array.isArray(analysis.suggestions)
+  );
+}
+
 function Dashboard() {
   const [profile, setProfile] = useState(null);
   const [roles, setRoles] = useState([]);
@@ -80,9 +91,12 @@ function Dashboard() {
       }
 
       if (readinessRes) {
-        setReadinessData(readinessRes.readiness);
-        if (readinessRes.latestAnalysis) {
+        if (isCompletedAnalysis(readinessRes.latestAnalysis)) {
+          setReadinessData(readinessRes.readiness);
           setAnalysis(readinessRes.latestAnalysis);
+        } else {
+          setReadinessData(null);
+          setAnalysis(null);
         }
         if (readinessRes.profile?.target_role_name) {
           setSelectedRoleName(readinessRes.profile.target_role_name);
@@ -195,6 +209,11 @@ function Dashboard() {
   }
 
   async function handleAnalysisComplete(newAnalysis) {
+    if (!isCompletedAnalysis(newAnalysis)) {
+      setError('Resume analysis did not return complete feedback. Please try again.');
+      return;
+    }
+
     setAnalysis(newAnalysis);
     setIsUploadingAnother(false);
     try {
