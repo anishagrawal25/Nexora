@@ -11,8 +11,6 @@ import {
   Clock,
   Layers,
   Check,
-  ShieldCheck,
-  Filter,
 } from 'lucide-react';
 import { apiRequest } from '../api';
 import Combobox from './Combobox';
@@ -156,27 +154,24 @@ function SkillGapPanel({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#E4E1D8]">
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs uppercase tracking-widest text-[#1F6F5C] font-medium">
-                GAP ASSESSMENT
-              </span>
               {skillGap?.isEstimate && (
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-[#FEF6E9] text-[#8C5819] border border-[#F6E0B8]">
-                  Heuristic Baseline
+                <span className="text-xs text-[#5B6670]">
+                  General guidance
                 </span>
               )}
             </div>
-            <h2 className="font-serif italic text-xl sm:text-2xl font-medium text-[#12181B] tracking-tight mt-0.5">
-              Role Skill Gap Matrix
+            <h2 className="font-serif text-xl sm:text-2xl text-[#12181B] mt-0.5">
+              Skill gaps
             </h2>
             <p className="text-xs text-[#5B6670] mt-1">
               {targetRoleName ? (
                 <>
-                  Benchmarking your resume against{' '}
+                  Comparing your resume with the skills for{' '}
                   <strong className="text-[#12181B] font-medium">{targetRoleName}</strong> technical
-                  competencies.
+                  .
                 </>
               ) : (
-                'Select a target role to benchmark technical competencies and identify missing requirements.'
+                'Choose or enter a role to see the skills it calls for.'
               )}
             </p>
           </div>
@@ -203,12 +198,12 @@ function SkillGapPanel({
         )}
 
         {skillGap?.isEstimate && (
-          <div className="mt-4 p-3.5 rounded-xl bg-[#FEF6E9] border border-[#F6E0B8] text-xs text-[#8C5819] flex items-start gap-2.5">
-            <Sparkles className="w-4 h-4 shrink-0 text-[#8C5819] mt-0.5" />
+          <div className="mt-4 p-3.5 rounded-xl bg-[#F2EFE9] border border-[#E4E1D8] text-xs text-[#5B6670] flex items-start gap-2.5">
+            <Sparkles className="w-4 h-4 shrink-0 text-[#1F6F5C] mt-0.5" />
             <div className="leading-relaxed">
-              <span className="font-semibold text-[#8C5819]">General Role Guidance: </span>
+              <span className="font-semibold text-[#12181B]">General guidance: </span>
               {skillGap.note ||
-                `Using standard industry competencies for '${targetRoleName}' since custom benchmark data is evolving.`}
+                `We do not have a saved benchmark for '${targetRoleName}', so this comparison is approximate.`}
             </div>
           </div>
         )}
@@ -217,7 +212,7 @@ function SkillGapPanel({
         {!targetRoleName && (
           <div className="mt-6 text-center py-10 px-4 border border-dashed border-[#E4E1D8] rounded-xl bg-[#FBFAF6]">
             <Target className="w-8 h-8 text-[#5B6670] mx-auto mb-2" />
-            <h3 className="font-serif italic text-base font-medium text-[#12181B] mb-1">Select your target track</h3>
+            <h3 className="font-serif text-base text-[#12181B] mb-1">Choose a role</h3>
             <p className="text-xs text-[#5B6670] max-w-sm mx-auto mb-4">
               Type any career goal or choose from established engineering tracks to evaluate your
               skill profile.
@@ -242,7 +237,7 @@ function SkillGapPanel({
         {targetRoleName && skillGap && (
           <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="p-4 rounded-xl bg-[#FBFAF6] border border-[#E4E1D8] flex flex-col justify-between">
-              <span className="text-[10px] font-mono tracking-widest text-[#5B6670] uppercase font-medium">
+              <span className="text-xs text-[#5B6670] font-medium">
                 Benchmark Match
               </span>
               <div className="my-1.5 flex items-baseline gap-1">
@@ -257,7 +252,7 @@ function SkillGapPanel({
             </div>
 
             <div className="p-4 rounded-xl bg-[#FBFAF6] border border-[#E4E1D8] flex flex-col justify-between">
-              <span className="text-[10px] font-mono tracking-widest text-[#5B6670] uppercase font-medium">
+              <span className="text-xs text-[#5B6670] font-medium">
                 Core Gaps (High)
               </span>
               <div className="my-1.5 flex items-baseline gap-1">
@@ -270,7 +265,7 @@ function SkillGapPanel({
             </div>
 
             <div className="p-4 rounded-xl bg-[#FBFAF6] border border-[#E4E1D8] flex flex-col justify-between">
-              <span className="text-[10px] font-mono tracking-widest text-[#5B6670] uppercase font-medium">
+              <span className="text-xs text-[#5B6670] font-medium">
                 Supporting Gaps
               </span>
               <div className="my-1.5 flex items-baseline gap-1">
@@ -283,8 +278,8 @@ function SkillGapPanel({
             </div>
 
             <div className="p-4 rounded-xl bg-[#FBFAF6] border border-[#E4E1D8] flex flex-col justify-between">
-              <span className="text-[10px] font-mono tracking-widest text-[#5B6670] uppercase font-medium">
-                Verified Skills
+              <span className="text-xs text-[#5B6670] font-medium">
+                Skills on your resume
               </span>
               <div className="my-1.5 flex items-baseline gap-1">
                 <span className="text-2xl font-semibold font-mono text-[#1F6F5C]">
@@ -304,7 +299,7 @@ function SkillGapPanel({
           {/* Segmented Filter Control */}
           <div className="flex flex-wrap items-center justify-between gap-3 bg-[#F2EFE9] p-1 border border-[#E4E1D8] rounded-xl shadow-xs">
             <div className="flex items-center gap-1">
-              <span className="text-[11px] font-mono text-[#5B6670] uppercase font-medium px-2 hidden sm:inline">
+              <span className="text-xs text-[#5B6670] px-2 hidden sm:inline">
                 Filter:
               </span>
               <button
@@ -360,11 +355,10 @@ function SkillGapPanel({
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-[#1F6F5C] shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="font-serif italic text-base font-medium text-[#12181B]">100% Benchmark Coverage</h4>
+                  <h4 className="font-serif text-base text-[#12181B]">All listed role skills appear on your resume</h4>
                   <p className="text-xs text-[#5B6670] mt-1 max-w-xl">
                     Your profile matches all expected technical competencies for{' '}
-                    <strong className="text-[#12181B]">{targetRoleName}</strong>. You are fully positioned for technical
-                    interview rounds on this track.
+                    <strong className="text-[#12181B]">{targetRoleName}</strong> in this comparison.
                   </p>
                 </div>
               </div>
@@ -383,7 +377,7 @@ function SkillGapPanel({
               <div className="flex items-center justify-between px-1">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-[#9E2A2B]" />
-                  <h3 className="font-mono text-xs uppercase tracking-widest text-[#12181B] font-medium">
+                  <h3 className="text-sm font-semibold text-[#12181B]">
                     Core Missing Competencies ({highPriorityGaps.length})
                   </h3>
                 </div>
@@ -411,7 +405,7 @@ function SkillGapPanel({
                           <div>
                             <div className="flex items-center gap-2">
                               <h4 className="text-sm font-semibold text-[#12181B]">{skill}</h4>
-                              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-[#F2EFE9] text-[#5B6670] border border-[#E4E1D8]">
+                              <span className="text-[11px] text-[#5B6670]">
                                 {domain}
                               </span>
                             </div>
@@ -444,8 +438,8 @@ function SkillGapPanel({
 
                         {/* Key Focus Topics */}
                         <div className="mb-4">
-                          <span className="text-[10px] font-mono text-[#5B6670] uppercase tracking-widest block mb-1.5 font-medium">
-                            Key Benchmark Concepts:
+                          <span className="text-xs text-[#5B6670] font-medium block mb-1.5">
+                            Topics to explore:
                           </span>
                           <ul className="space-y-1">
                             {topics.slice(0, 3).map((topic, i) => (
@@ -496,7 +490,7 @@ function SkillGapPanel({
                 <div className="flex items-center justify-between px-1">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-[#8C5819]" />
-                    <h3 className="font-mono text-xs uppercase tracking-widest text-[#12181B] font-medium">
+                    <h3 className="text-sm font-semibold text-[#12181B]">
                       Supporting Technical Gaps ({mediumAndSupportingGaps.length})
                     </h3>
                   </div>
@@ -521,7 +515,7 @@ function SkillGapPanel({
                           <div>
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="text-xs font-semibold text-[#12181B]">{skill}</span>
-                              <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-[#F2EFE9] text-[#5B6670] border border-[#E4E1D8]">
+                              <span className="text-[11px] text-[#5B6670]">
                                 {domain}
                               </span>
                               {getPriorityBadge(priority)}
@@ -558,12 +552,12 @@ function SkillGapPanel({
                 <div className="flex items-center justify-between px-1">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-[#1F6F5C]" />
-                    <h3 className="font-mono text-xs uppercase tracking-widest text-[#12181B] font-medium">
-                      Verified Benchmark Competencies ({verifiedBenchmarkSkills.length})
+                    <h3 className="text-sm font-semibold text-[#12181B]">
+                      Skills found on your resume ({verifiedBenchmarkSkills.length})
                     </h3>
                   </div>
                   <span className="text-[11px] text-[#5B6670]">
-                    Detected in uploaded resume & projects
+                    Found in your uploaded resume
                   </span>
                 </div>
 

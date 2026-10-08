@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Loader2, Check } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { apiRequest } from '../api';
 import { validatePassword } from '../utils/validatePassword';
 import AuthToggle from '../components/AuthToggle';
@@ -59,7 +59,7 @@ function Register() {
       <AuthToggle />
       <div className="bg-white border border-[#E4E1D8] rounded-2xl p-7 sm:p-8 shadow-xs">
         <div className="mb-6">
-          <h1 className="font-serif italic text-2xl font-medium text-[#12181B] tracking-tight">
+          <h1 className="text-2xl font-semibold text-[#12181B]">
             Create Account
           </h1>
           <p className="text-xs text-[#5B6670] mt-1">

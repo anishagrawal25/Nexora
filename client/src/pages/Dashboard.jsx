@@ -6,17 +6,10 @@ import {
   Target,
   Building2,
   Compass,
-  CheckCircle2,
-  TrendingUp,
-  RefreshCw,
   Edit2,
   X,
   LogOut,
-  User,
   ArrowRight,
-  ExternalLink,
-  ShieldCheck,
-  ChevronRight,
 } from 'lucide-react';
 import { apiRequest } from '../api';
 import ResumeUpload from '../components/ResumeUpload';
@@ -39,13 +32,6 @@ function calculateProfileCompleteness(profile) {
   const filled = fields.filter((v) => v !== null && v !== undefined && String(v).trim() !== '').length;
   return Math.round((filled / fields.length) * 100);
 }
-
-const POPULAR_ROLES = [
-  'Full Stack Developer',
-  'Frontend Developer',
-  'Backend Developer',
-  'Data Analyst',
-];
 
 function Dashboard() {
   const [profile, setProfile] = useState(null);
@@ -75,9 +61,6 @@ function Dashboard() {
 
   async function loadDashboardData() {
     try {
-      setLoading(true);
-      setError('');
-
       const [profileRes, rolesRes, readinessRes, skillGapRes] = await Promise.all([
         apiRequest('/profile'),
         apiRequest('/profile/roles'),
@@ -129,7 +112,7 @@ function Dashboard() {
   }
 
   useEffect(() => {
-    loadDashboardData();
+    Promise.resolve().then(loadDashboardData);
   }, []);
 
   function handleLogout() {
@@ -254,10 +237,10 @@ function Dashboard() {
   const displayScore = analysis?.readinessScore ?? readinessData?.score ?? null;
 
   const tabs = [
-    { id: 'resume', label: 'Resume Analysis', icon: FileText },
-    { id: 'skill-gap', label: 'Skill Gap Matrix', icon: Target },
-    { id: 'eligibility', label: 'Company Eligibility', icon: Building2 },
-    { id: 'recommendations', label: 'Curated Roadmaps', icon: Compass },
+    { id: 'resume', label: 'Your resume', icon: FileText },
+    { id: 'skill-gap', label: 'Skill gaps', icon: Target },
+    { id: 'eligibility', label: 'Check a company', icon: Building2 },
+    { id: 'recommendations', label: 'What to learn next', icon: Compass },
   ];
 
   return (
@@ -275,8 +258,8 @@ function Dashboard() {
               </span>
             </div>
             <span className="text-[#E4E1D8] text-sm hidden sm:inline">/</span>
-            <span className="text-xs text-[#5B6670] hidden sm:inline font-mono">
-              Placement Readiness
+            <span className="text-xs text-[#5B6670] hidden sm:inline">
+              Career readiness
             </span>
           </div>
 
@@ -302,11 +285,11 @@ function Dashboard() {
         {/* Page Title & Status */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 mb-6 border-b border-[#E4E1D8]">
           <div>
-            <h1 className="font-serif italic text-2xl sm:text-3xl font-medium text-[#12181B] tracking-tight">
+            <h1 className="font-serif display-serif text-2xl sm:text-3xl font-medium text-[#12181B]">
               Welcome back, {profile.name}
             </h1>
             <p className="text-xs text-[#5B6670] mt-1">
-              Review your placement readiness score, benchmark against role requirements, and bridge skill gaps.
+              Your resume, role gaps, company checks, and next steps.
             </p>
           </div>
 
@@ -353,8 +336,8 @@ function Dashboard() {
             </div>
             <p className="text-xs text-[#5B6670] leading-relaxed">
               {displayScore !== null
-                ? 'Multi-factor weighted benchmark index'
-                : 'Upload your resume to calculate your live AI benchmark score against top tech roles.'}
+                ? 'Based on your profile, resume, and chosen role.'
+                : 'Upload a resume and choose a role to see your score.'}
             </p>
           </div>
 
@@ -379,27 +362,23 @@ function Dashboard() {
             </div>
             <div className="flex flex-wrap items-center gap-1.5 pt-1">
               {profile.cgpa ? (
-                <span className="text-[11px] font-mono px-2 py-0.5 rounded-lg bg-[#F2EFE9] text-[#12181B] border border-[#E4E1D8]">
-                  CGPA: <strong>{profile.cgpa}</strong>
-                </span>
+                <span className="text-xs text-[#12181B]">CGPA {profile.cgpa}</span>
               ) : (
                 <button
                   type="button"
                   onClick={() => setIsEditingProfile(true)}
-                  className="text-[11px] font-mono px-2 py-0.5 rounded-lg bg-[#F2EFE9] text-[#5B6670] border border-[#E4E1D8] hover:border-[#1F6F5C] transition cursor-pointer"
+                  className="text-xs text-[#1F6F5C] hover:underline cursor-pointer"
                 >
                   + Set CGPA
                 </button>
               )}
               {profile.grad_year ? (
-                <span className="text-[11px] font-mono px-2 py-0.5 rounded-lg bg-[#F2EFE9] text-[#12181B] border border-[#E4E1D8]">
-                  Batch: <strong>{profile.grad_year}</strong>
-                </span>
+                <span className="text-xs text-[#12181B]">Batch {profile.grad_year}</span>
               ) : (
                 <button
                   type="button"
                   onClick={() => setIsEditingProfile(true)}
-                  className="text-[11px] font-mono px-2 py-0.5 rounded-lg bg-[#F2EFE9] text-[#5B6670] border border-[#E4E1D8] hover:border-[#1F6F5C] transition cursor-pointer"
+                  className="text-xs text-[#1F6F5C] hover:underline cursor-pointer"
                 >
                   + Set Batch
                 </button>
@@ -424,27 +403,6 @@ function Dashboard() {
                 }}
               />
             </div>
-            <div className="mt-2 flex items-center gap-1.5 flex-wrap">
-              <span className="text-[10px] font-mono text-[#5B6670]">Popular:</span>
-              {POPULAR_ROLES.map((roleName) => {
-                const isSelected = selectedRoleName?.toLowerCase() === roleName.toLowerCase();
-                const matched = roles.find((r) => r.name.toLowerCase() === roleName.toLowerCase());
-                return (
-                  <button
-                    key={roleName}
-                    type="button"
-                    onClick={() => handleTargetRoleChange(matched ? matched.id : null, roleName)}
-                    className={`text-[10px] px-2 py-0.5 rounded-md transition cursor-pointer font-medium ${
-                      isSelected
-                        ? 'bg-[#1F6F5C] text-white shadow-xs'
-                        : 'bg-[#F2EFE9] text-[#12181B] hover:bg-[#EAE6DD] border border-[#E4E1D8]'
-                    }`}
-                  >
-                    {roleName}
-                  </button>
-                );
-              })}
-            </div>
           </div>
         </div>
 
@@ -453,8 +411,8 @@ function Dashboard() {
           <div className="bg-white border border-[#E4E1D8] rounded-2xl p-6 mb-8 shadow-xs">
             <div className="flex items-center justify-between pb-4 border-b border-[#E4E1D8] mb-5">
               <div>
-                <h3 className="font-serif italic text-lg font-medium text-[#12181B]">
-                  Edit Academic & Portfolio Details
+                <h3 className="font-serif text-lg text-[#12181B]">
+                  Edit your profile
                 </h3>
                 <p className="text-xs text-[#5B6670] mt-0.5">
                   These values are used to evaluate eligibility against company criteria cutoffs.
@@ -562,19 +520,20 @@ function Dashboard() {
           </div>
         )}
 
-        {/* Tabbed Navigation: Restyled to match AuthToggle segmented pill pattern */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 bg-[#F2EFE9] p-1 rounded-xl border border-[#E4E1D8] mb-8">
+        <div role="tablist" aria-label="Career readiness sections" className="flex gap-5 overflow-x-auto border-b border-[#E4E1D8] mb-8">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             const Icon = tab.icon;
             return (
               <button
                 key={tab.id}
+                role="tab"
+                aria-selected={isActive}
                 onClick={() => setActiveTab(tab.id)}
-                className={`py-2 px-3 rounded-lg text-xs sm:text-sm font-medium transition cursor-pointer inline-flex items-center justify-center gap-2 ${
+                className={`shrink-0 border-b-2 py-3 text-xs sm:text-sm font-medium cursor-pointer inline-flex items-center gap-2 ${
                   isActive
-                    ? 'bg-white shadow-xs text-[#12181B] font-semibold'
-                    : 'text-[#5B6670] hover:text-[#12181B]'
+                    ? 'border-[#1F6F5C] text-[#12181B] font-semibold'
+                    : 'border-transparent text-[#5B6670] hover:text-[#12181B]'
                 }`}
               >
                 <Icon className={`w-4 h-4 ${isActive ? 'text-[#1F6F5C]' : 'text-[#5B6670]'}`} />
@@ -609,11 +568,8 @@ function Dashboard() {
                   {/* Header Row */}
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-[#E4E1D8] mb-6">
                     <div>
-                      <span className="font-mono text-xs uppercase tracking-widest text-[#1F6F5C] font-medium block">
-                        AI RESUME EXTRACTION & AUDIT
-                      </span>
-                      <h2 className="font-serif italic text-xl font-medium text-[#12181B] tracking-tight mt-0.5">
-                        Structured Resume Feedback
+                      <h2 className="font-serif text-xl text-[#12181B]">
+                        Resume feedback
                       </h2>
                     </div>
 
@@ -628,7 +584,7 @@ function Dashboard() {
                         onClick={() => setActiveTab('skill-gap')}
                         className="text-xs font-medium text-white bg-[#1F6F5C] hover:bg-[#185849] rounded-xl px-4 py-1.5 transition cursor-pointer shadow-sm inline-flex items-center gap-1.5"
                       >
-                        <span>View Skill Gaps</span>
+                        <span>View skill gaps</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </button>
                     </div>

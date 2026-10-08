@@ -92,15 +92,11 @@ function ResumeUpload({ onAnalysisComplete }) {
       <div className="max-w-2xl mx-auto">
         {/* Section Title */}
         <div className="text-center mb-6">
-          <span className="font-mono text-xs uppercase tracking-widest text-[#1F6F5C] font-medium block mb-1">
-            Resume Extraction
-          </span>
-          <h2 className="font-serif italic text-2xl font-medium text-[#12181B] tracking-tight">
-            Upload Your Resume
+          <h2 className="font-serif text-2xl text-[#12181B]">
+            Your resume
           </h2>
           <p className="text-xs sm:text-sm text-[#5B6670] mt-1 max-w-md mx-auto">
-            Extract technical competencies, project depth, and experience signals to benchmark your
-            placement readiness.
+            Upload a text-based PDF to extract skills and feedback from your resume.
           </p>
         </div>
 
@@ -168,7 +164,7 @@ function ResumeUpload({ onAnalysisComplete }) {
                     or drag and drop your PDF
                   </p>
                   <p className="text-[11px] text-[#5B6670] mt-1 font-mono">
-                    Encrypted upload • PDF format up to 5.0 MB
+                    PDF format, up to 5 MB
                   </p>
                 </div>
               </>

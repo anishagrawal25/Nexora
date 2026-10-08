@@ -1,4 +1,4 @@
-import { TrendingUp, CheckCircle2 } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 
 function ReadinessBreakdown({ readiness, targetRoleName }) {
   if (!readiness) return null;
@@ -42,14 +42,11 @@ function ReadinessBreakdown({ readiness, targetRoleName }) {
     <div className="bg-white border border-[#E4E1D8] rounded-2xl p-6 sm:p-7 shadow-xs">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#E4E1D8]">
         <div>
-          <span className="font-mono text-xs uppercase tracking-widest text-[#1F6F5C] font-medium">
-            READINESS ENGINE
-          </span>
-          <h2 className="font-serif italic text-xl sm:text-2xl font-medium text-[#12181B] tracking-tight mt-0.5">
-            Placement Readiness Breakdown
+          <h2 className="font-serif text-xl sm:text-2xl text-[#12181B]">
+            Your readiness score
           </h2>
           <p className="text-xs text-[#5B6670] mt-1">
-            Deterministic multi-factor score evaluating profile completeness, resume quality, and role alignment.
+            Based on your profile, resume, experience information, and selected role.
           </p>
         </div>
 

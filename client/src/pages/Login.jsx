@@ -41,7 +41,7 @@ function Login() {
       <AuthToggle />
       <div className="bg-white border border-[#E4E1D8] rounded-2xl p-7 sm:p-8 shadow-xs">
         <div className="mb-6">
-          <h1 className="font-serif italic text-2xl font-medium text-[#12181B] tracking-tight">
+          <h1 className="text-2xl font-semibold text-[#12181B]">
             Sign In
           </h1>
           <p className="text-xs text-[#5B6670] mt-1">

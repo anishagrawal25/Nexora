@@ -32,11 +32,40 @@
     color: #12181B;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    letter-spacing: -0.01em;
+    letter-spacing: 0;
   }
 
   ::selection {
     background-color: #EBF3F0;
     color: #1F6F5C;
   }
+}
+
+.font-serif:not(.display-serif) {
+  font-family: var(--font-sans);
+  font-style: normal;
+  font-weight: 600;
+}
+
+.font-serif.display-serif {
+  font-family: var(--font-serif);
+  font-style: normal;
+}
+
+.rounded-xl,
+.rounded-2xl {
+  border-radius: 8px;
+}
+
+.shadow-xs,
+.shadow-sm,
+.shadow-lg {
+  box-shadow: none;
+}
+
+*,
+*::before,
+*::after {
+  animation: none !important;
+  transition: none !important;
 }

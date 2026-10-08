@@ -4,7 +4,6 @@ import {
   CheckCircle2,
   XCircle,
   Sparkles,
-  AlertCircle,
   ArrowRight,
 } from 'lucide-react';
 import { apiRequest } from '../api';
@@ -17,7 +16,6 @@ function CompanyEligibility({ profile }) {
   const [matches, setMatches] = useState([]);
   const [activeGroup, setActiveGroup] = useState('all'); // 'all' | 'qualify' | 'close' | 'not_yet'
   const [loading, setLoading] = useState(true);
-  const [evaluating, setEvaluating] = useState(false);
   const [error, setError] = useState('');
 
   // Fetch companies list, initial evaluation, and reverse matches
@@ -51,7 +49,6 @@ function CompanyEligibility({ profile }) {
 
   async function fetchCompanyEligibility(companyNameOrId) {
     if (!companyNameOrId) return;
-    setEvaluating(true);
     setError('');
     try {
       const data = await apiRequest(
@@ -63,8 +60,6 @@ function CompanyEligibility({ profile }) {
       }
     } catch (err) {
       setError(err.message);
-    } finally {
-      setEvaluating(false);
     }
   }
 
@@ -94,14 +89,14 @@ function CompanyEligibility({ profile }) {
       <div className="bg-white border border-[#E4E1D8] rounded-2xl p-6 sm:p-7 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#E4E1D8]">
           <div>
-            <span className="font-mono text-xs uppercase tracking-widest text-[#1F6F5C] font-medium">
-              CRITERIA EVALUATOR
-            </span>
-            <h2 className="font-serif italic text-xl sm:text-2xl font-medium text-[#12181B] tracking-tight mt-0.5">
+            <h2 className="font-serif text-xl sm:text-2xl text-[#12181B]">
               Check a company
             </h2>
             <p className="text-xs text-[#5B6670] mt-1">
-              Verify your academic profile and skills against hiring criteria and recruitment filters.
+              Compare your profile with the example criteria available for a company.
+            </p>
+            <p className="text-xs text-[#5B6670] mt-2">
+              Criteria are approximate examples, not official company requirements.
             </p>
           </div>
 
@@ -145,7 +140,9 @@ function CompanyEligibility({ profile }) {
                         </span>
                       )}
                     </h3>
-                    <p className="text-[11px] text-[#5B6670]">Hiring Criteria Assessment</p>
+                    <p className="text-[11px] text-[#5B6670]">
+                      {evaluation.isEstimate ? 'General guidance' : 'Approximate criteria comparison'}
+                    </p>
                   </div>
                 </div>
 
@@ -257,7 +254,7 @@ function CompanyEligibility({ profile }) {
               {evaluation.requiredSkills && evaluation.requiredSkills.length > 0 && (
                 <div className="mt-4 pt-3.5 border-t border-[#E4E1D8]">
                   <p className="text-xs text-[#5B6670] mb-2 font-medium">
-                    Required Skill Verification:
+                    Listed skills:
                   </p>
                   <div className="flex flex-wrap gap-1.5">
                     {evaluation.requiredSkills.map((skill) => {
@@ -291,15 +288,12 @@ function CompanyEligibility({ profile }) {
       {/* SECTION 2: "Which companies fit you?" (Reverse Match) */}
       <div className="bg-white border border-[#E4E1D8] rounded-2xl p-6 sm:p-7 shadow-xs">
         <div className="pb-5 border-b border-[#E4E1D8]">
-          <span className="font-mono text-xs uppercase tracking-widest text-[#1F6F5C] font-medium">
-            REVERSE MATCH
-          </span>
-          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 mt-0.5">
-            <h2 className="font-serif italic text-xl sm:text-2xl font-medium text-[#12181B] tracking-tight">
-              See where you already stand
+          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
+            <h2 className="font-serif text-xl sm:text-2xl text-[#12181B]">
+              Where you stand today
             </h2>
             <p className="text-xs text-[#5B6670]">
-              Automated comparison across all {matches.length || companies.length || 0} tracked companies
+              Compared with {matches.length || companies.length || 0} available companies
             </p>
           </div>
 
@@ -359,7 +353,7 @@ function CompanyEligibility({ profile }) {
             return (
               <div
                 key={m.companyId + m.company}
-                className={`p-5 rounded-2xl border transition flex flex-col justify-between ${
+                className={`p-5 rounded-2xl border flex flex-col justify-between ${
                   isSelected
                     ? 'border-[#1F6F5C] bg-white ring-1 ring-[#1F6F5C] shadow-xs'
                     : 'border-[#E4E1D8] bg-[#FBFAF6] hover:bg-white hover:border-[#1F6F5C]/40'

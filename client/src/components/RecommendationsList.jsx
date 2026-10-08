@@ -1,17 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import {
-  ExternalLink,
   RefreshCw,
   BookOpen,
-  Sparkles,
   Clock,
-  Layers,
-  ChevronRight,
   ArrowUpRight,
-  CheckCircle2,
-  Code2,
   ListOrdered,
-  GraduationCap,
 } from 'lucide-react';
 import { apiRequest } from '../api';
 import {
@@ -28,33 +21,64 @@ function RecommendationsList({ targetRole, hasResume }) {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('all'); // 'all' | 'high' | 'medium'
-  const [expandedSkill, setExpandedSkill] = useState(null);
 
   const targetRoleName =
     typeof targetRole === 'string' ? targetRole : targetRole?.name || '';
 
-  async function fetchRecommendations(isRefresh = false) {
-    if (isRefresh) setRefreshing(true);
-    else setLoading(true);
+  async function refreshRecommendations() {
+    if (!hasResume || !targetRoleName) return;
+
+    setRefreshing(true);
     setError('');
 
     try {
-      const endpoint = targetRoleName
-        ? `/profile/recommendations?targetRole=${encodeURIComponent(targetRoleName)}`
-        : '/profile/recommendations';
-      const data = await apiRequest(endpoint);
+      const data = await apiRequest(
+        `/profile/recommendations?targetRole=${encodeURIComponent(targetRoleName)}`
+      );
       setRecommendations(data.items || []);
     } catch (err) {
       setError(err.message);
     } finally {
-      setLoading(false);
       setRefreshing(false);
     }
   }
 
   useEffect(() => {
-    fetchRecommendations();
-  }, [targetRoleName]);
+    let cancelled = false;
+
+    if (!hasResume || !targetRoleName) {
+      Promise.resolve().then(() => {
+        if (cancelled) return;
+        setRecommendations([]);
+        setLoading(false);
+        setError('');
+      });
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    Promise.resolve()
+      .then(() => {
+        if (cancelled) return null;
+        setLoading(true);
+        setError('');
+        return apiRequest(`/profile/recommendations?targetRole=${encodeURIComponent(targetRoleName)}`);
+      })
+      .then((data) => {
+        if (!cancelled && data) setRecommendations(data.items || []);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [targetRoleName, hasResume]);
 
   const highPriorityItems = useMemo(() => {
     return recommendations.filter(
@@ -104,27 +128,18 @@ function RecommendationsList({ targetRole, hasResume }) {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#E4E1D8]">
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-mono text-xs uppercase tracking-widest text-[#1F6F5C] font-medium">
-                LEARNING ROADMAP
-              </span>
-              {targetRoleName && (
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-[#F2EFE9] text-[#12181B] border border-[#E4E1D8]">
-                  {targetRoleName} Track
-                </span>
-              )}
             </div>
-            <h2 className="font-serif italic text-xl sm:text-2xl font-medium text-[#12181B] tracking-tight mt-0.5">
-              Curated Skill Roadmaps
+            <h2 className="font-serif text-xl sm:text-2xl text-[#12181B] mt-0.5">
+              What to learn next
             </h2>
             <p className="text-xs text-[#5B6670] mt-1">
-              Structured learning pathways and official documentation mapped directly to your
-              missing benchmark requirements.
+              Learning suggestions come from skills missing for your selected role.
             </p>
           </div>
 
           <button
-            onClick={() => fetchRecommendations(true)}
-            disabled={loading || refreshing}
+            onClick={refreshRecommendations}
+            disabled={!hasResume || !targetRoleName || loading || refreshing}
             className="text-xs font-medium text-[#12181B] bg-white border border-[#E4E1D8] px-3.5 py-2 rounded-xl hover:bg-[#F2EFE9] transition disabled:opacity-50 inline-flex items-center gap-2 self-start sm:self-auto cursor-pointer shadow-xs"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
@@ -140,46 +155,9 @@ function RecommendationsList({ targetRole, hasResume }) {
 
         {/* Roadmap Summary Strip */}
         {recommendations.length > 0 && (
-          <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="p-4 rounded-xl bg-[#FBFAF6] border border-[#E4E1D8] flex flex-col justify-between">
-              <span className="text-[10px] font-mono tracking-widest text-[#5B6670] uppercase font-medium">
-                Active Modules
-              </span>
-              <div className="my-1 flex items-baseline gap-1">
-                <span className="text-2xl font-semibold font-mono text-[#12181B]">
-                  {recommendations.length}
-                </span>
-                <span className="text-[11px] font-mono text-[#5B6670]">skills</span>
-              </div>
-              <p className="text-[11px] text-[#5B6670]">Total roadmap syllabus</p>
-            </div>
-
-            <div className="p-4 rounded-xl bg-[#FBFAF6] border border-[#E4E1D8] flex flex-col justify-between">
-              <span className="text-[10px] font-mono tracking-widest text-[#5B6670] uppercase font-medium">
-                Phase 1 Core Focus
-              </span>
-              <div className="my-1 flex items-baseline gap-1">
-                <span className="text-2xl font-semibold font-mono text-[#9E2A2B]">
-                  {highPriorityItems.length}
-                </span>
-                <span className="text-[11px] font-mono text-[#5B6670]">high priority</span>
-              </div>
-              <p className="text-[11px] text-[#5B6670]">Recommended first</p>
-            </div>
-
-            <div className="p-4 rounded-xl bg-[#FBFAF6] border border-[#E4E1D8] flex flex-col justify-between">
-              <span className="text-[10px] font-mono tracking-widest text-[#5B6670] uppercase font-medium">
-                Phase 2 Tooling
-              </span>
-              <div className="my-1 flex items-baseline gap-1">
-                <span className="text-2xl font-semibold font-mono text-[#8C5819]">
-                  {mediumItems.length}
-                </span>
-                <span className="text-[11px] font-mono text-[#5B6670]">supporting</span>
-              </div>
-              <p className="text-[11px] text-[#5B6670]">Infrastructure & APIs</p>
-            </div>
-          </div>
+          <p className="mt-4 text-xs text-[#5B6670]">
+            {recommendations.length} skills to work on, including {highPriorityItems.length} high-priority {highPriorityItems.length === 1 ? 'skill' : 'skills'}.
+          </p>
         )}
       </div>
 
@@ -192,14 +170,22 @@ function RecommendationsList({ targetRole, hasResume }) {
               Assembling curated roadmap...
             </p>
           </div>
-        ) : recommendations.length === 0 ? (
+        ) : !hasResume || !targetRoleName ? (
           <div className="bg-white border border-[#E4E1D8] rounded-2xl p-8 text-center shadow-xs">
-            <Sparkles className="w-8 h-8 text-[#5B6670] mx-auto mb-2" />
-            <h3 className="font-serif italic text-base font-medium text-[#12181B] mb-1">
-              No Missing Skill Modules
+            <h3 className="font-serif text-base text-[#12181B] mb-1">
+              What to learn next
             </h3>
             <p className="text-xs text-[#5B6670] max-w-md mx-auto">
-              Your resume already matches all core benchmark competencies for {targetRoleName || 'your target role'}, or no target role is currently set.
+              Upload a resume and choose a role to see what to learn next.
+            </p>
+          </div>
+        ) : recommendations.length === 0 ? (
+          <div className="bg-white border border-[#E4E1D8] rounded-2xl p-8 text-center shadow-xs">
+            <h3 className="font-serif text-base text-[#12181B] mb-1">
+              No skill gaps found
+            </h3>
+            <p className="text-xs text-[#5B6670] max-w-md mx-auto">
+              Your resume includes all skills listed for {targetRoleName}.
             </p>
           </div>
         ) : (
@@ -250,8 +236,6 @@ function RecommendationsList({ targetRole, hasResume }) {
                 const topics = getSkillTopics(skill);
                 const resource = getSkillResource(skill);
                 const reason = getContextualReason(skill, targetRoleName, false);
-                const isExpanded = expandedSkill === skill;
-
                 return (
                   <div
                     key={skill + idx}
@@ -294,12 +278,12 @@ function RecommendationsList({ targetRole, hasResume }) {
                     {/* Curated Syllabus Topics Breakdown */}
                     <div className="p-4 rounded-xl bg-[#FBFAF6] border border-[#E4E1D8] mb-4">
                       <div className="flex items-center justify-between mb-2.5">
-                        <span className="text-[10px] font-mono uppercase tracking-widest text-[#5B6670] font-medium flex items-center gap-1.5">
+                        <span className="text-xs text-[#5B6670] font-medium flex items-center gap-1.5">
                           <ListOrdered className="w-3.5 h-3.5 text-[#1F6F5C]" />
-                          Curated Learning Modules & Core Concepts
+                          Topics to explore
                         </span>
                         <span className="text-[10px] font-mono text-[#5B6670]">
-                          Target: {estimate.level}
+                          Suggested level: {estimate.level}
                         </span>
                       </div>
 
@@ -307,7 +291,7 @@ function RecommendationsList({ targetRole, hasResume }) {
                         {topics.map((topic, tIdx) => (
                           <div
                             key={tIdx}
-                            className="text-xs text-[#12181B] flex items-start gap-2 bg-white px-3 py-2 rounded-lg border border-[#E4E1D8]"
+                            className="text-xs text-[#12181B] flex items-start gap-2 py-1.5 border-b border-[#E4E1D8] last:border-0"
                           >
                             <span className="text-[#5B6670] font-mono text-[10px] mt-0.5">
                               {tIdx + 1}.
@@ -321,7 +305,7 @@ function RecommendationsList({ targetRole, hasResume }) {
                     {/* Footer Actions */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-[#E4E1D8]">
                       <div className="text-[11px] text-[#5B6670]">
-                        Official canonical learning path for {skill}
+                        Learning resource for {skill}
                       </div>
 
                       <div className="flex items-center gap-2">
@@ -332,7 +316,7 @@ function RecommendationsList({ targetRole, hasResume }) {
                           className="text-xs font-medium text-white bg-[#1F6F5C] hover:bg-[#185849] active:bg-[#14493D] px-4 py-2 rounded-xl inline-flex items-center gap-1.5 transition shadow-xs cursor-pointer"
                         >
                           <BookOpen className="w-3.5 h-3.5 text-white/90" />
-                          <span>Open Official Documentation</span>
+                          <span>Open learning resource</span>
                           <ArrowUpRight className="w-3.5 h-3.5 text-white/80" />
                         </a>
                       </div>
