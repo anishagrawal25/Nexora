@@ -2,6 +2,7 @@ const { AppError, asyncHandler } = require("../middleware/errorHandler");
 const ResumeAnalysis = require("../models/ResumeAnalysis");
 const { PDFParse } = require("pdf-parse");
 const genAI = require("../config/gemini");
+const { isValidResumeAnalysis } = require("../utils/pureFunctions");
 
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -118,6 +119,10 @@ ${resumeText}
     analysisData = JSON.parse(cleanedText);
   } catch (err) {
     throw new AppError("AI returned an invalid response format", 502);
+  }
+
+  if (!isValidResumeAnalysis(analysisData)) {
+    throw new AppError("AI returned incomplete resume feedback. Please try again.", 502);
   }
 
   // Save the analysis to the existing Mongo document

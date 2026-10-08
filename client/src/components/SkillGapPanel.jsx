@@ -233,6 +233,22 @@ function SkillGapPanel({
           </div>
         )}
 
+        {targetRoleName && !hasResume && (
+          <div className="mt-6 border-t border-[#E4E1D8] pt-6">
+            <h3 className="text-base font-semibold text-[#12181B]">Add a resume to compare skills</h3>
+            <p className="mt-1 text-xs text-[#5B6670]">
+              We need an analyzed resume before we can identify your gaps for {targetRoleName}.
+            </p>
+            <button
+              type="button"
+              onClick={() => onNavigateTab?.('resume')}
+              className="mt-4 rounded-lg bg-[#1F6F5C] px-4 py-2 text-xs font-medium text-white hover:bg-[#185849]"
+            >
+              Go to your resume
+            </button>
+          </div>
+        )}
+
         {/* Benchmark Overview Metrics Bar */}
         {targetRoleName && skillGap && (
           <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">

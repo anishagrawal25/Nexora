@@ -234,7 +234,7 @@ function Dashboard() {
     roles.find((r) => Number(r.id) === Number(profile?.target_role_id)) ||
     (selectedRoleName ? { name: selectedRoleName } : null);
   const completenessScore = calculateProfileCompleteness(profile);
-  const displayScore = analysis?.readinessScore ?? readinessData?.score ?? null;
+  const displayScore = analysis ? readinessData?.score ?? null : null;
 
   const tabs = [
     { id: 'resume', label: 'Your resume', icon: FileText },
@@ -699,7 +699,7 @@ function Dashboard() {
                     </ul>
                   </div>
 
-                  {readinessData && (
+                  {analysis && readinessData && (
                     <div className="mt-6">
                       <ReadinessBreakdown readiness={readinessData} targetRoleName={selectedRoleName} />
                     </div>

@@ -63,7 +63,7 @@ function Register() {
             Create Account
           </h1>
           <p className="text-xs text-[#5B6670] mt-1">
-            Get instant AI analysis and benchmark your placement readiness.
+            Create an account to compare your resume with a role and see what to work on next.
           </p>
         </div>
 

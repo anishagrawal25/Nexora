@@ -28,21 +28,12 @@ async function getLatestAnalyzedResume(userId) {
     userConditions.push({ userId: strId });
   }
 
-  // 1. Look for an analyzed resume with non-empty skills
-  let analysis = await ResumeAnalysis.findOne({
+  // Only completed analyses have a numeric quality score. A failed upload or
+  // failed Gemini request must not be presented as resume feedback.
+  const analysis = await ResumeAnalysis.findOne({
     $or: userConditions,
-    $and: [
-      { extractedSkills: { $exists: true } },
-      { "extractedSkills.0": { $exists: true } },
-    ],
+    readinessScore: { $ne: null },
   }).sort({ createdAt: -1 });
-
-  // 2. Fallback to latest resume document if no fully analyzed document exists yet
-  if (!analysis) {
-    analysis = await ResumeAnalysis.findOne({
-      $or: userConditions,
-    }).sort({ createdAt: -1 });
-  }
 
   return analysis;
 }
@@ -230,6 +221,7 @@ router.get(
     const userSkills = Array.isArray(latestAnalysis?.extractedSkills)
       ? latestAnalysis.extractedSkills
       : [];
+    const hasAnalyzedResume = Boolean(latestAnalysis);
 
     if (companyParam !== undefined && companyParam !== null && String(companyParam).trim() !== "") {
       const trimmedParam = String(companyParam).trim();
@@ -262,9 +254,11 @@ router.get(
       // Case 1: Exact match found in seeded companies
       if (criteria) {
         const requiredSkills = Array.isArray(criteria.required_skills) ? criteria.required_skills : [];
-        const missingSkills = requiredSkills.filter(
-          (skill) => !userSkills.some((item) => normalizeSkill(item) === normalizeSkill(skill))
-        );
+        const missingSkills = hasAnalyzedResume
+          ? requiredSkills.filter(
+              (skill) => !userSkills.some((item) => normalizeSkill(item) === normalizeSkill(skill))
+            )
+          : [];
 
         const meetsCgpa =
           user.cgpa !== null && user.cgpa !== undefined && criteria.min_cgpa !== null && criteria.min_cgpa !== undefined
@@ -276,12 +270,13 @@ router.get(
             ? Number(user.grad_year) >= Number(criteria.min_grad_year)
             : false;
 
-        const isEligible = meetsCgpa && meetsGradYear && missingSkills.length === 0;
+        const isEligible = hasAnalyzedResume && meetsCgpa && meetsGradYear && missingSkills.length === 0;
 
         return res.status(200).json({
           company: criteria.company_name,
           companyId: criteria.company_id ? Number(criteria.company_id) : null,
           eligible: isEligible,
+          hasAnalyzedResume,
           meetsCgpa,
           meetsGradYear,
           missingSkills,
@@ -296,9 +291,11 @@ router.get(
       // Case 2: No exact match found -> Use heuristic fallback
       const fallback = getCompanyFallback(trimmedParam);
       const requiredSkills = fallback.requiredSkills;
-      const missingSkills = requiredSkills.filter(
-        (skill) => !userSkills.some((item) => normalizeSkill(item) === normalizeSkill(skill))
-      );
+      const missingSkills = hasAnalyzedResume
+        ? requiredSkills.filter(
+            (skill) => !userSkills.some((item) => normalizeSkill(item) === normalizeSkill(skill))
+          )
+        : [];
 
       const meetsCgpa =
         user.cgpa !== null && user.cgpa !== undefined
@@ -310,12 +307,13 @@ router.get(
           ? Number(user.grad_year) >= Number(fallback.minimumGradYear)
           : false;
 
-      const isEligible = meetsCgpa && meetsGradYear && missingSkills.length === 0;
+      const isEligible = hasAnalyzedResume && meetsCgpa && meetsGradYear && missingSkills.length === 0;
 
       return res.status(200).json({
         company: fallback.company,
         companyId: null,
         eligible: isEligible,
+        hasAnalyzedResume,
         meetsCgpa,
         meetsGradYear,
         missingSkills,
@@ -337,9 +335,11 @@ router.get(
 
     const companies = allCriteriaResult.rows.map((row) => {
       const requiredSkills = Array.isArray(row.required_skills) ? row.required_skills : [];
-      const missingSkills = requiredSkills.filter(
-        (skill) => !userSkills.some((item) => normalizeSkill(item) === normalizeSkill(skill))
-      );
+      const missingSkills = hasAnalyzedResume
+        ? requiredSkills.filter(
+            (skill) => !userSkills.some((item) => normalizeSkill(item) === normalizeSkill(skill))
+          )
+        : [];
       const meetsCgpa =
         user.cgpa !== null && user.cgpa !== undefined && row.min_cgpa !== null && row.min_cgpa !== undefined
           ? Number(user.cgpa) >= Number(row.min_cgpa)
@@ -348,12 +348,13 @@ router.get(
         user.grad_year !== null && user.grad_year !== undefined && row.min_grad_year !== null && row.min_grad_year !== undefined
           ? Number(user.grad_year) >= Number(row.min_grad_year)
           : false;
-      const isEligible = meetsCgpa && meetsGradYear && missingSkills.length === 0;
+      const isEligible = hasAnalyzedResume && meetsCgpa && meetsGradYear && missingSkills.length === 0;
 
       return {
         companyId: row.company_id,
         company: row.company_name,
         eligible: isEligible,
+        hasAnalyzedResume,
         meetsCgpa,
         meetsGradYear,
         missingSkills,
@@ -398,14 +399,19 @@ router.get(
        ORDER BY c.name, c.id`
     );
 
+    const hasAnalyzedResume = Boolean(latestAnalysis);
     const matches = allCriteriaResult.rows.map((row) => {
       const requiredSkills = Array.isArray(row.required_skills) ? row.required_skills : [];
-      const matchedSkills = requiredSkills.filter((skill) =>
-        userSkills.some((item) => normalizeSkill(item) === normalizeSkill(skill))
-      );
-      const missingSkills = requiredSkills.filter(
-        (skill) => !userSkills.some((item) => normalizeSkill(item) === normalizeSkill(skill))
-      );
+      const matchedSkills = hasAnalyzedResume
+        ? requiredSkills.filter((skill) =>
+            userSkills.some((item) => normalizeSkill(item) === normalizeSkill(skill))
+          )
+        : [];
+      const missingSkills = hasAnalyzedResume
+        ? requiredSkills.filter(
+            (skill) => !userSkills.some((item) => normalizeSkill(item) === normalizeSkill(skill))
+          )
+        : [];
 
       const meetsCgpa =
         user.cgpa !== null && user.cgpa !== undefined && row.min_cgpa !== null && row.min_cgpa !== undefined
@@ -417,10 +423,13 @@ router.get(
           ? Number(user.grad_year) >= Number(row.min_grad_year)
           : false;
 
-      const eligible = meetsCgpa && meetsGradYear && missingSkills.length === 0;
+      const eligible = hasAnalyzedResume && meetsCgpa && meetsGradYear && missingSkills.length === 0;
 
       // Construct specific human-readable unmet reasons
       const unmetReasons = [];
+      if (!hasAnalyzedResume) {
+        unmetReasons.push("Upload and analyze a resume to compare required skills");
+      }
       if (!meetsCgpa) {
         if (user.cgpa === null || user.cgpa === undefined) {
           unmetReasons.push(`CGPA not set (minimum required: ${row.min_cgpa})`);
@@ -447,9 +456,9 @@ router.get(
       let tier = "not_yet";
       if (eligible) {
         tier = "qualify";
-      } else if (missingSkills.length <= 1 && meetsCgpa && meetsGradYear) {
+      } else if (hasAnalyzedResume && missingSkills.length <= 1 && meetsCgpa && meetsGradYear) {
         tier = "close";
-      } else if (missingSkills.length <= 2 && (meetsCgpa || meetsGradYear)) {
+      } else if (hasAnalyzedResume && missingSkills.length <= 2 && (meetsCgpa || meetsGradYear)) {
         tier = "close";
       }
 
@@ -457,6 +466,7 @@ router.get(
         companyId: row.company_id,
         company: row.company_name,
         eligible,
+        hasAnalyzedResume,
         meetsCgpa,
         meetsGradYear,
         requiredSkills,
@@ -469,7 +479,7 @@ router.get(
       };
     });
 
-    res.status(200).json({ matches });
+    res.status(200).json({ hasAnalyzedResume, matches });
   })
 );
 
@@ -495,6 +505,13 @@ router.get(
 
     let expectedSkills = [];
     const roleToResolve = targetRoleQuery || user.target_role_id;
+
+    if (!roleToResolve) {
+      return res.status(200).json({
+        message: "Choose a target role to see learning recommendations.",
+        items: [],
+      });
+    }
 
     if (roleToResolve) {
       const isNumeric = !isNaN(Number(roleToResolve)) && typeof roleToResolve !== "boolean";
@@ -525,16 +542,17 @@ router.get(
     }
 
     const latestAnalysis = await getLatestAnalyzedResume(req.user.id);
+    if (!latestAnalysis) {
+      throw new AppError(
+        "No analyzed resume found. Upload and analyze a resume before generating recommendations.",
+        400
+      );
+    }
     const currentSkills = Array.isArray(latestAnalysis?.extractedSkills)
       ? latestAnalysis.extractedSkills
       : [];
 
-    let targetSkills = expectedSkills;
-    if (targetSkills.length === 0) {
-      targetSkills = ["React", "Node.js", "PostgreSQL", "Docker", "Git", "REST APIs"];
-    }
-
-    const missingSkills = targetSkills.filter(
+    const missingSkills = expectedSkills.filter(
       (skill) => !currentSkills.some((item) => normalizeSkill(item) === normalizeSkill(skill))
     );
 

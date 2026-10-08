@@ -1,15 +1,9 @@
-/**
- * Nexora API Client
- * Robust endpoint resolution and error handling for both local dev and production deployments.
- */
-
 function resolveBaseUrl() {
   const envUrl = import.meta.env.VITE_API_URL;
-  if (envUrl && typeof envUrl === 'string' && envUrl.trim() !== '') {
+  if (envUrl && typeof envUrl === 'string' && envUrl.trim()) {
     return envUrl.trim().replace(/\/+$/, '');
   }
 
-  // If running in a deployed browser environment on a non-localhost host
   if (
     typeof window !== 'undefined' &&
     window.location.hostname !== 'localhost' &&
@@ -27,20 +21,42 @@ function buildUrl(endpoint) {
   const base = resolveBaseUrl();
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
 
-  // If base already ends with /api and cleanEndpoint also starts with /api/, prevent /api/api/
   if (base.endsWith('/api') && cleanEndpoint.startsWith('/api/')) {
     return `${base}${cleanEndpoint.slice(4)}`;
   }
   return `${base}${cleanEndpoint}`;
 }
 
+async function readResponse(response, url, requestType) {
+  let data;
+  try {
+    data = await response.json();
+  } catch (cause) {
+    if (response.ok) return {};
+    if (response.status === 404) {
+      throw new Error(
+        `API endpoint not found (404 at ${url}). Check VITE_API_URL for this deployment.`,
+        { cause }
+      );
+    }
+    throw new Error(`${requestType} failed with status ${response.status}`, { cause });
+  }
+
+  if (!response.ok) {
+    throw new Error(data.error || data.message || `${requestType} failed (${response.status})`, {
+      cause: data,
+    });
+  }
+  return data;
+}
+
 export async function apiRequest(endpoint, options = {}) {
   const token = localStorage.getItem('token');
   const url = buildUrl(endpoint);
+  let response;
 
-  let res;
   try {
-    res = await fetch(url, {
+    response = await fetch(url, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
@@ -48,34 +64,14 @@ export async function apiRequest(endpoint, options = {}) {
         ...options.headers,
       },
     });
-  } catch (netErr) {
-    console.error(`[Nexora Network Error] Failed to reach ${url}:`, netErr);
-    throw new Error(
-      `Network connection failed to ${url}. Please verify your backend server is deployed and running.`
-    );
+  } catch (cause) {
+    console.error(`[Nexora Network Error] Failed to reach ${url}:`, cause);
+    throw new Error(`Network connection failed to ${url}. Check that the backend is running.`, {
+      cause,
+    });
   }
 
-  let data;
-  try {
-    data = await res.json();
-  } catch (parseErr) {
-    if (!res.ok) {
-      if (res.status === 404) {
-        console.error(`[Nexora API 404] Endpoint not found at ${url}`);
-        throw new Error(
-          `API endpoint not found (404 at ${url}). If this is a deployed environment, ensure VITE_API_URL is configured in your frontend deployment settings (e.g. Vercel/Render env vars) pointing to your live backend (e.g. https://your-backend.onrender.com/api).`
-        );
-      }
-      throw new Error(`Server returned error ${res.status}`);
-    }
-    return {};
-  }
-
-  if (!res.ok) {
-    throw new Error(data.error || data.message || `Request failed (${res.status})`);
-  }
-
-  return data;
+  return readResponse(response, url, 'Request');
 }
 
 export async function uploadResume(file) {
@@ -83,35 +79,20 @@ export async function uploadResume(file) {
   const formData = new FormData();
   formData.append('resume', file);
   const url = buildUrl('/resume/upload');
+  let response;
 
-  let res;
   try {
-    res = await fetch(url, {
+    response = await fetch(url, {
       method: 'POST',
-      headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: formData,
     });
-  } catch (netErr) {
-    console.error(`[Nexora Upload Error] Failed to reach ${url}:`, netErr);
-    throw new Error(`Network connection failed during upload to ${url}.`);
+  } catch (cause) {
+    console.error(`[Nexora Upload Error] Failed to reach ${url}:`, cause);
+    throw new Error(`Network connection failed during upload to ${url}.`, { cause });
   }
 
-  let data;
-  try {
-    data = await res.json();
-  } catch (parseErr) {
-    if (!res.ok) {
-      throw new Error(`Upload failed with status ${res.status}`);
-    }
-    return {};
-  }
-
-  if (!res.ok) {
-    throw new Error(data.error || data.message || 'Upload failed');
-  }
-  return data;
+  return readResponse(response, url, 'Upload');
 }
 
 export { API_URL, buildUrl };

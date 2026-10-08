@@ -12,6 +12,7 @@ function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [wakingServer, setWakingServer] = useState(false);
   const navigate = useNavigate();
 
   async function handleSubmit(e) {
@@ -22,6 +23,8 @@ function Login() {
       return;
     }
     setLoading(true);
+    setWakingServer(false);
+    const wakeTimer = window.setTimeout(() => setWakingServer(true), 2000);
     try {
       const data = await apiRequest('/auth/login', {
         method: 'POST',
@@ -32,7 +35,9 @@ function Login() {
     } catch (err) {
       setError(err.message);
     } finally {
+      window.clearTimeout(wakeTimer);
       setLoading(false);
+      setWakingServer(false);
     }
   }
 
@@ -45,7 +50,7 @@ function Login() {
             Sign In
           </h1>
           <p className="text-xs text-[#5B6670] mt-1">
-            Access your readiness scorecard and skill gap analysis.
+            Open your resume feedback, role gaps, and company checks.
           </p>
         </div>
 
@@ -77,6 +82,12 @@ function Login() {
             </div>
           )}
 
+          {loading && wakingServer && (
+            <p role="status" className="text-xs text-[#5B6670]">
+              Waking up the server, this can take up to 30 seconds.
+            </p>
+          )}
+
           <button
             type="submit"
             disabled={loading}
@@ -85,7 +96,7 @@ function Login() {
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin text-white/80" />
-                <span>Signing in...</span>
+                <span>{wakingServer ? 'Waking up server...' : 'Signing in...'}</span>
               </>
             ) : (
               'Sign In'

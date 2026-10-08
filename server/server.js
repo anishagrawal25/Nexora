@@ -1,17 +1,9 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
-
-// EVENT LOOP DEMONSTRATION (safe to leave in — runs once on startup, no side effects)
-// This proves synchronous code always runs before queued async callbacks,
-// regardless of the order they're written in.
-console.log("1. Synchronous code runs first");
-setTimeout(() => console.log("4. setTimeout (macrotask) runs last"), 0);
-Promise.resolve().then(() => console.log("3. Promise .then (microtask) runs before setTimeout"));
-console.log("2. Synchronous code again — still before either async callback");
-
 dotenv.config();
 
+const { getAllowedOrigins, assertSecurityConfiguration } = require("./config/security");
 const { connectPostgres } = require("./config/postgres");
 const { connectMongo } = require("./config/mongo");
 const authRoutes = require("./routes/authRoutes");
@@ -23,7 +15,11 @@ const fs = require("fs");
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin(origin, callback) {
+    callback(null, !origin || getAllowedOrigins().includes(origin));
+  },
+}));
 app.use(express.json());
 
 // Support both /api/* and non-prefixed routes for deployment flexibility
@@ -106,6 +102,7 @@ app.use(errorHandler);
 // things in the meantime.
 
 async function start() {
+  assertSecurityConfiguration();
   const postgresReady = await connectPostgres();
   const mongoReady = await connectMongo();
 
@@ -115,6 +112,10 @@ async function start() {
 
   if (!mongoReady) {
     console.warn("MongoDB unavailable; continuing without it.");
+  }
+
+  if (process.env.NODE_ENV === "production" && (!postgresReady || !mongoReady)) {
+    throw new Error("Production startup requires PostgreSQL and MongoDB to be available.");
   }
 
   app.listen(PORT, () => {

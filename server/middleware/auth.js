@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const { AppError } = require("./errorHandler");
+const { getJwtSecret } = require("../config/security");
 
 function requireAuth(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -11,8 +12,7 @@ function requireAuth(req, res, next) {
   const token = authHeader.split(" ")[1];
 
   try {
-    const jwtSecret = process.env.JWT_SECRET || "nexora_default_jwt_secret_key_2026";
-    const payload = jwt.verify(token, jwtSecret);
+    const payload = jwt.verify(token, getJwtSecret());
     req.user = payload;
     next();
   } catch (err) {

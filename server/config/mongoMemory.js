@@ -20,6 +20,13 @@ function matchUserCondition(docUserId, cond) {
 function matchesFilter(doc, filter = {}) {
   if (!filter || Object.keys(filter).length === 0) return true;
 
+  if (
+    filter.readinessScore?.$ne !== undefined &&
+    (doc.readinessScore === null || doc.readinessScore === undefined)
+  ) {
+    return false;
+  }
+
   if (filter.$or && Array.isArray(filter.$or)) {
     const matched = filter.$or.some((cond) => {
       if (cond.userId !== undefined) {
@@ -131,7 +138,7 @@ const ResumeAnalysisMemory = {
       strengths: data.strengths || [],
       weaknesses: data.weaknesses || [],
       suggestions: data.suggestions || [],
-      readinessScore: data.readinessScore || null,
+      readinessScore: data.readinessScore ?? null,
       deterministicReadinessScore: data.deterministicReadinessScore || null,
       createdAt: data.createdAt || new Date(),
     };

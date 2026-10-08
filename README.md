@@ -8,10 +8,9 @@
 [![MongoDB](https://img.shields.io/badge/Database-MongoDB%20Atlas-47A248?style=flat-square&logo=mongodb)](https://www.mongodb.com/)
 [![Gemini AI](https://img.shields.io/badge/AI-Google%20Gemini%20Flash-8E75B2?style=flat-square&logo=googlegemini)](https://ai.google.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Styling-Tailwind%20CSS%20v4-38B2AC?style=flat-square&logo=tailwindcss)](https://tailwindcss.com/)
-[![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
 
 **One score. Every gap. What to learn next.**  
-*An end-to-end career intelligence engine pairing LLM resume extraction with deterministic readiness scoring, benchmark gap analysis, company criteria verification, and curated learning paths.*
+*Upload a resume, compare it with a role, check illustrative company criteria, and see what to learn next.*
 
 </div>
 
@@ -22,7 +21,7 @@
 - [Overview & Problem Statement](#-overview--problem-statement)
 - [System Architecture](#-system-architecture)
 - [Core Features & Capabilities](#-core-features--capabilities)
-- [Deterministic Readiness Scoring Formula](#-deterministic-readiness-scoring-formula)
+- [Readiness Scoring Formula](#-readiness-scoring-formula)
 - [Tech Stack](#-tech-stack)
 - [Database Architecture](#-database-architecture)
 - [API Reference](#-api-reference)
@@ -42,11 +41,11 @@ College students and early-career software engineers often face an ambiguous hir
 - Candidates lack clear, prioritized roadmaps showing what to learn next to bridge the gap.
 
 **Nexora solves this by combining:**
-1. **AI Extraction**: Uses Google Gemini to extract verified competencies, project signals, strengths, and areas for improvement directly from PDF resumes.
-2. **Deterministic Mathematical Scoring**: Calculates an objective readiness score based on profile completeness, resume depth, target benchmark match, and verified portfolio signals.
+1. **Resume Analysis**: Uses Google Gemini to extract skills, strengths, weaknesses, and suggestions from PDF resume text.
+2. **Readiness Score**: Calculates a repeatable score from profile completeness, resume analysis, role skill match, and experience signals.
 3. **Role Gap Analysis**: Set-difference matching against industry benchmarks, ranking every missing requirement by hiring priority.
-4. **Automated Company Screening**: Instant eligibility checks across tracked tech companies (Google, Microsoft, Razorpay, TCS, Startups) against CGPA, graduation batch, and required skills.
-5. **Curated Learning Roadmaps**: Direct, vetted links to official documentation and technical tutorials for every identified gap.
+4. **Company Checks**: Compares CGPA, graduation year, and analyzed resume skills with illustrative criteria. Criteria are approximate examples, not official company requirements.
+5. **Learning Suggestions**: Shows skills missing from the selected role and links to related learning resources.
 
 ---
 
@@ -100,27 +99,29 @@ flowchart TD
 
 | Feature | Description |
 | :--- | :--- |
-| **Public Landing Showcase (`/`)** | Modern landing page showcasing the 4-step evaluation pipeline, interactive demo scorecard, and direct links to register/login. |
+| **Public Landing Page (`/`)** | Explains the resume, role, company-check, and learning-suggestion flow with links to register/login. |
 | **Role Selection & Profile Sync** | Pick from standard target benchmarks (Frontend, Backend, Full Stack, Data Analyst) or define custom career pathways. |
-| **AI Resume Parsing** | Upload PDF resumes to Cloudinary; Gemini Flash extracts technical competencies, strengths, weaknesses, and suggestions. |
+| **AI Resume Analysis** | Upload PDF resumes to Cloudinary; Gemini Flash extracts skills, strengths, weaknesses, and suggestions. |
 | **Multi-Factor Scorecard** | Real-time score (0–100) combining profile completeness, resume quality, skill match, and experience signals. |
 | **Skill Gap Matrix** | Normalized set-difference matching that highlights missing competencies grouped by **High**, **Medium**, and **Low** priority. |
-| **Automated Company Screening** | Dropdown company selector showing exact eligibility status against strict CGPA, batch, and skill criteria. |
-| **Curated Documentation Links** | Dynamic direct links to official docs (React, Node.js, PostgreSQL, Docker, System Design, etc.) for every gap. |
+| **Company Checks** | Free-text or listed-company checks against illustrative CGPA, batch, and skill criteria. |
+| **Learning Suggestions** | Links to learning resources for skills missing from the selected role comparison. |
+
+Company criteria are approximate examples, not official company requirements. Unmatched company and role inputs are labelled as general guidance.
 
 ---
 
-## 📐 Deterministic Readiness Scoring Formula
+## 📐 Readiness Scoring Formula
 
-Unlike pure LLM scores that can fluctuate between runs, Nexora calculates an objective, reproducible score:
+Nexora combines four weighted components into a repeatable score for the saved profile and analysis:
 
 $$\text{Readiness Score} = \Big(\text{ProfileCompleteness} \times 0.25\Big) + \Big(\text{ResumeQuality} \times 0.35\Big) + \Big(\text{SkillMatch} \times 0.30\Big) + \Big(\text{ExperienceBonus} \times 0.10\Big)$$
 
 ### Weight Breakdown:
 1. **Profile Completeness (25%)**: Ratio of completed profile fields (CGPA, Graduation Year, GitHub, LinkedIn, Portfolio, Target Role).
 2. **Resume Quality (35%)**: Composite of extracted technical skills, concrete strengths, structural suggestions, and calibrated LLM quality index.
-3. **Skill Match (30%)**: Case-insensitive set-intersection of candidate's verified skills against target role requirements.
-4. **Experience Signal Bonus (10%)**: Awarded for verified portfolio links or work/internship/leadership signals detected in project descriptions.
+3. **Skill Match (30%)**: Case-insensitive overlap of extracted resume skills and the selected role's listed skills.
+4. **Experience Signal Bonus (10%)**: Based on portfolio links or experience-related text in the resume analysis.
 
 ---
 
@@ -131,7 +132,7 @@ $$\text{Readiness Score} = \Big(\text{ProfileCompleteness} \times 0.25\Big) + \B
 - **Routing**: React Router v7
 - **Styling**: Tailwind CSS v4 (Design tokens: `#FBFAF6` canvas, `#1F6F5C` forest green, `#12181B` ink text)
 - **Icons**: Lucide React
-- **Typography**: Fraunces (serif headlines), IBM Plex Mono (labels/metrics), Inter (body)
+- **Typography**: Fraunces for the landing headline and dashboard greeting; Inter for other interface text; IBM Plex Mono for selected numeric values.
 
 ### Backend
 - **Runtime**: Node.js (CommonJS)
@@ -152,7 +153,7 @@ $$\text{Readiness Score} = \Big(\text{ProfileCompleteness} \times 0.25\Big) + \B
 ### PostgreSQL (Relational)
 - **`users`**: `id (SERIAL)`, `name`, `email (UNIQUE)`, `password_hash`, `cgpa`, `grad_year`, `github_url`, `linkedin_url`, `portfolio_url`, `target_role_id (FK)`
 - **`target_roles`**: `id (SERIAL)`, `name`, `expected_skills (TEXT[])`
-- **`companies`**: `id (SERIAL)`, `name`, `industry`, `tier`
+- **`companies`**: `id (SERIAL)`, `name`
 - **`eligibility_criteria`**: `id (SERIAL)`, `company_id (FK)`, `min_cgpa`, `min_grad_year`, `required_skills (TEXT[])`
 
 ### MongoDB (Document Store)
@@ -189,7 +190,7 @@ Content-Type: application/json
 - `POST /api/profile/skill-gap` — Compute missing competencies and priority ranking.
 - `GET /api/profile/skill-gap` — Retrieve latest computed skill gap analysis.
 - `GET /api/profile/eligibility?companyId=X` — Evaluate student eligibility against company criteria.
-- `GET /api/profile/recommendations` — Fetch curated learning URLs for missing skills.
+- `GET /api/profile/recommendations?targetRole=...` — Fetch learning suggestions for a selected role after resume analysis.
 
 ### Resume Upload & AI Analysis
 - `POST /api/resume/upload` — Multipart form-data with `resume` PDF file.
@@ -217,7 +218,8 @@ Create `server/.env`:
 PORT=5000
 DATABASE_URL=postgresql://<user>:<password>@<host>/<dbname>?sslmode=require
 MONGO_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/nexora?retryWrites=true&w=majority
-JWT_SECRET=your_super_secret_jwt_key
+JWT_SECRET=replace_with_a_random_secret_at_least_32_characters_long
+CLIENT_ORIGIN=http://localhost:5173
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_cloudinary_api_key
 CLOUDINARY_API_SECRET=your_cloudinary_api_secret
@@ -228,7 +230,7 @@ GEMINI_API_KEY=your_gemini_api_key
 ```bash
 cd server
 npm install
-npm test          # Run 18 unit tests
+npm test          # Run server unit tests
 npm run dev       # Starts server on http://localhost:5000
 ```
 
@@ -256,6 +258,7 @@ npm run dev       # Starts Vite dev server on http://localhost:5173
    - `DATABASE_URL` — Neon PostgreSQL connection string with SSL
    - `MONGO_URI` — MongoDB Atlas connection string
    - `JWT_SECRET` — Long random string (32+ chars)
+    - `CLIENT_ORIGIN` — Exact Vercel site origin (for example `https://nexora-blush-two-24.vercel.app`). Comma-separate additional allowed origins if needed.
    - `GEMINI_API_KEY` — Google Gemini API key
    - `CLOUDINARY_CLOUD_NAME` — Cloudinary Cloud Name
    - `CLOUDINARY_API_KEY` — Cloudinary API Key
@@ -277,7 +280,7 @@ npm run dev       # Starts Vite dev server on http://localhost:5173
 4. In **Environment Variables**, add:
    - `VITE_API_URL` = `https://<your-render-backend-url>/api` (e.g. `https://nexora-api.onrender.com/api`)
 5. Click **Deploy**.
-6. [client/vercel.json](file:///Users/dhruvpatil/Nexora/client/vercel.json) is pre-configured with SPA route rewrites so direct navigation to `/dashboard`, `/login`, and `/register` resolves seamlessly.
+6. [client/vercel.json](client/vercel.json) is configured with SPA route rewrites so direct navigation to `/dashboard`, `/login`, and `/register` works.
 
 ---
 
@@ -297,10 +300,4 @@ npm test
 - `calculateReadiness`: Combined weighted 4-factor scoring and null tolerance.
 - `findResource`: Exact and alias resource lookups with search fallback.
 - `validateEmail` & `validatePassword`: Strict format and length validations.
-- `getRoleFallback` & `getCompanyFallback`: Heuristic tier categorization and estimation flags.
-
----
-
-## 📄 License
-
-Distributed under the MIT License. See `LICENSE` for more information.
+- `getRoleFallback` & `getCompanyFallback`: Heuristic categorization and estimate flags.

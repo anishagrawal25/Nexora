@@ -152,6 +152,10 @@ function CompanyEligibility({ profile }) {
                       <CheckCircle2 className="w-3.5 h-3.5 text-[#1F6F5C]" />
                       ELIGIBLE TO APPLY
                     </span>
+                  ) : !evaluation.hasAnalyzedResume ? (
+                    <span className="text-xs font-medium text-[#5B6670]">
+                      Resume needed
+                    </span>
                   ) : (
                     <span className="inline-flex items-center gap-1.5 bg-[#FDF0ED] text-[#9E2A2B] border border-[#F5CAC3] font-mono text-xs font-semibold px-2.5 py-1 rounded-lg">
                       <XCircle className="w-3.5 h-3.5 text-[#9E2A2B]" />
@@ -193,7 +197,9 @@ function CompanyEligibility({ profile }) {
                     </span>
                   </div>
                   <p className="text-[11px] text-[#5B6670] mt-1">
-                    {evaluation.meetsCgpa
+                    {!profile?.cgpa
+                      ? 'Add your CGPA to check this requirement'
+                      : evaluation.meetsCgpa
                       ? 'CGPA requirement satisfied'
                       : 'CGPA below minimum cutoff'}
                   </p>
@@ -218,7 +224,9 @@ function CompanyEligibility({ profile }) {
                     </span>
                   </div>
                   <p className="text-[11px] text-[#5B6670] mt-1">
-                    {evaluation.meetsGradYear
+                    {!profile?.grad_year
+                      ? 'Add your graduation year to check this requirement'
+                      : evaluation.meetsGradYear
                       ? 'Graduation batch eligible'
                       : 'Graduation year ineligible'}
                   </p>
@@ -228,7 +236,7 @@ function CompanyEligibility({ profile }) {
                 <div className="p-4 bg-white border border-[#E4E1D8] rounded-xl shadow-xs">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs text-[#5B6670] font-medium">Mandatory Skills</span>
-                    {evaluation.missingSkills?.length === 0 ? (
+                    {!evaluation.hasAnalyzedResume ? null : evaluation.missingSkills?.length === 0 ? (
                       <CheckCircle2 className="w-4 h-4 text-[#1F6F5C]" />
                     ) : (
                       <XCircle className="w-4 h-4 text-[#9E2A2B]" />
@@ -236,14 +244,18 @@ function CompanyEligibility({ profile }) {
                   </div>
                   <div className="flex items-baseline gap-1.5">
                     <span className="text-sm font-semibold font-mono text-[#12181B]">
-                      {(evaluation.requiredSkills?.length || 0) -
-                        (evaluation.missingSkills?.length || 0)}
-                      /{evaluation.requiredSkills?.length || 0}
+                      {evaluation.hasAnalyzedResume
+                        ? `${(evaluation.requiredSkills?.length || 0) - (evaluation.missingSkills?.length || 0)}/${evaluation.requiredSkills?.length || 0}`
+                        : 'Not checked'}
                     </span>
-                    <span className="text-xs text-[#5B6670] font-mono">Matched</span>
+                    {evaluation.hasAnalyzedResume && (
+                      <span className="text-xs text-[#5B6670] font-mono">Matched</span>
+                    )}
                   </div>
                   <p className="text-[11px] text-[#5B6670] mt-1">
-                    {evaluation.missingSkills?.length === 0
+                    {!evaluation.hasAnalyzedResume
+                      ? 'Analyze a resume to compare skills'
+                      : evaluation.missingSkills?.length === 0
                       ? 'All required skills verified'
                       : `${evaluation.missingSkills?.length} mandatory skill(s) missing`}
                   </p>
@@ -263,12 +275,14 @@ function CompanyEligibility({ profile }) {
                         <span
                           key={skill}
                           className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg border font-medium ${
-                            isMissing
+                            !evaluation.hasAnalyzedResume
+                              ? 'bg-[#F2EFE9] text-[#5B6670] border-[#E4E1D8]'
+                              : isMissing
                               ? 'bg-[#FDF0ED] text-[#9E2A2B] border-[#F5CAC3] line-through opacity-75'
                               : 'bg-[#EBF3F0] text-[#1F6F5C] border-[#CDE3DC]'
                           }`}
                         >
-                          {isMissing ? (
+                          {!evaluation.hasAnalyzedResume ? null : isMissing ? (
                             <XCircle className="w-3 h-3 text-[#9E2A2B]" />
                           ) : (
                             <CheckCircle2 className="w-3 h-3 text-[#1F6F5C]" />
@@ -365,7 +379,11 @@ function CompanyEligibility({ profile }) {
                       {m.company}
                     </h4>
 
-                    {m.tier === 'qualify' ? (
+                    {!m.hasAnalyzedResume ? (
+                      <span className="inline-flex items-center text-[11px] font-medium text-[#5B6670]">
+                        Resume needed
+                      </span>
+                    ) : m.tier === 'qualify' ? (
                       <span className="inline-flex items-center gap-1 bg-[#EBF3F0] text-[#1F6F5C] border border-[#CDE3DC] text-[11px] font-mono font-medium px-2 py-0.5 rounded-md">
                         <CheckCircle2 className="w-3 h-3 text-[#1F6F5C]" />
                         Qualify Now
@@ -390,7 +408,9 @@ function CompanyEligibility({ profile }) {
                     <span>Batch: {m.minimumGradYear || 'N/A'}+</span>
                     <span>•</span>
                     <span>
-                      Skills: {m.matchedSkills?.length || 0}/{m.requiredSkills?.length || 0}
+                      Skills: {m.hasAnalyzedResume
+                        ? `${m.matchedSkills?.length || 0}/${m.requiredSkills?.length || 0}`
+                        : 'not checked'}
                     </span>
                   </div>
 

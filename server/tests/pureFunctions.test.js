@@ -11,6 +11,7 @@ const {
   validatePassword,
   getRoleFallback,
   getCompanyFallback,
+  isValidResumeAnalysis,
 } = require("../utils/pureFunctions");
 
 describe("Nexora Pure Functions & Calculations", () => {
@@ -199,6 +200,45 @@ describe("Nexora Pure Functions & Calculations", () => {
       assert.equal(unknownFallback.isEstimate, true);
       assert.ok(unknownFallback.minimumCgpa <= 7.00);
       assert.ok(unknownFallback.note.includes("Random Enterprise X"));
+    });
+  });
+
+  describe("Resume analysis validation", () => {
+    test("accepts complete feedback with a score from 0 to 100", () => {
+      assert.equal(
+        isValidResumeAnalysis({
+          skills: [],
+          strengths: [],
+          weaknesses: [],
+          suggestions: [],
+          readinessScore: 0,
+        }),
+        true
+      );
+    });
+
+    test("rejects missing arrays, non-numeric scores, and out-of-range scores", () => {
+      assert.equal(isValidResumeAnalysis({ skills: [], readinessScore: 50 }), false);
+      assert.equal(
+        isValidResumeAnalysis({
+          skills: [],
+          strengths: [],
+          weaknesses: [],
+          suggestions: [],
+          readinessScore: "50",
+        }),
+        false
+      );
+      assert.equal(
+        isValidResumeAnalysis({
+          skills: [],
+          strengths: [],
+          weaknesses: [],
+          suggestions: [],
+          readinessScore: 101,
+        }),
+        false
+      );
     });
   });
 });

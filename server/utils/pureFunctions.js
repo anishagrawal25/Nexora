@@ -30,6 +30,19 @@ function normalizeSkill(skill) {
   return String(skill || "").trim().toLowerCase();
 }
 
+function isValidResumeAnalysis(analysis) {
+  return Boolean(
+    analysis &&
+      Array.isArray(analysis.skills) &&
+      Array.isArray(analysis.strengths) &&
+      Array.isArray(analysis.weaknesses) &&
+      Array.isArray(analysis.suggestions) &&
+      Number.isFinite(analysis.readinessScore) &&
+      analysis.readinessScore >= 0 &&
+      analysis.readinessScore <= 100
+  );
+}
+
 function getPriorityByIndex(index) {
   if (index < 3) return "High";
   if (index < 6) return "Medium";
@@ -270,6 +283,7 @@ function getCompanyFallback(companyName) {
 module.exports = {
   RESOURCE_MAP,
   normalizeSkill,
+  isValidResumeAnalysis,
   getPriorityByIndex,
   findResource,
   calculateProfileCompleteness,

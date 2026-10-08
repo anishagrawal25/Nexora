@@ -20,7 +20,7 @@ if (process.env.DATABASE_URL) {
   }
 }
 
-// In-memory relational store fallback (seeded with 4 roles, 15 companies, 15 criteria, and default user)
+// In-memory relational fallback for development and database outages.
 const memoryDb = {
   target_roles: [
     { id: 1, name: "Frontend Developer", expected_skills: ["React", "JavaScript", "CSS", "Git", "REST APIs", "HTML"] },
@@ -33,7 +33,7 @@ const memoryDb = {
     { id: 2, name: "Microsoft" },
     { id: 3, name: "TCS" },
     { id: 4, name: "Infosys" },
-    { id: 5, name: "a Startup" },
+    { id: 5, name: "Stripe" },
     { id: 6, name: "Amazon" },
     { id: 7, name: "Meta" },
     { id: 8, name: "Apple" },
@@ -50,7 +50,7 @@ const memoryDb = {
     { id: 2, company_id: 2, min_cgpa: 8.00, min_grad_year: 2024, required_skills: ["C#", "Azure", "Data Structures", "SQL"] },
     { id: 3, company_id: 3, min_cgpa: 6.50, min_grad_year: 2023, required_skills: ["Java", "SQL", "Git"] },
     { id: 4, company_id: 4, min_cgpa: 6.50, min_grad_year: 2023, required_skills: ["Java", "Python", "SQL"] },
-    { id: 5, company_id: 5, min_cgpa: 7.00, min_grad_year: 2024, required_skills: ["React", "Node.js", "MongoDB", "Git"] },
+    { id: 5, company_id: 5, min_cgpa: 8.00, min_grad_year: 2024, required_skills: ["Node.js", "System Design", "PostgreSQL"] },
     { id: 6, company_id: 6, min_cgpa: 8.00, min_grad_year: 2024, required_skills: ["Java", "Data Structures", "System Design", "SQL"] },
     { id: 7, company_id: 7, min_cgpa: 8.50, min_grad_year: 2024, required_skills: ["React", "JavaScript", "System Design", "Data Structures"] },
     { id: 8, company_id: 8, min_cgpa: 8.50, min_grad_year: 2024, required_skills: ["Data Structures", "System Design", "Python", "Git"] },
@@ -62,22 +62,8 @@ const memoryDb = {
     { id: 14, company_id: 14, min_cgpa: 7.50, min_grad_year: 2024, required_skills: ["Node.js", "PostgreSQL", "Docker", "REST APIs", "Git"] },
     { id: 15, company_id: 15, min_cgpa: 7.00, min_grad_year: 2024, required_skills: ["React", "Node.js", "REST APIs", "SQL"] },
   ],
-  users: [
-    {
-      id: 1,
-      name: "Demo Student",
-      email: "demo@college.edu",
-      password_hash: "$2b$10$VzQcHp.elQwmVWakaXqJCOmjJVpKk9JmpjtQZQJmwfUU412HmmGt2",
-      cgpa: 8.20,
-      grad_year: 2025,
-      github_url: "https://github.com/demo",
-      linkedin_url: "https://linkedin.com/in/demo",
-      portfolio_url: "https://demo.dev",
-      target_role_id: 1,
-      created_at: new Date(),
-    },
-  ],
-  nextUserId: 2,
+  users: [],
+  nextUserId: 1,
 };
 
 async function executeMemoryQuery(text, params = []) {
@@ -277,22 +263,21 @@ async function connectPostgres() {
 
   try {
     const client = await realPool.connect();
-    await client.query("SELECT 1");
-
-    // Ensure all 15 companies & criteria are present in the live database
     try {
       const fs = require("fs");
       const path = require("path");
+      const { seedCompanyData } = require("./companySeed");
       const schemaPath = path.join(__dirname, "schema.sql");
       if (fs.existsSync(schemaPath)) {
         const schemaSql = fs.readFileSync(schemaPath, "utf-8");
         await client.query(schemaSql);
       }
-    } catch (seedErr) {
-      console.warn("Notice: schema auto-seed check:", seedErr.message);
+      await seedCompanyData(client);
+      await client.query("SELECT 1");
+    } finally {
+      client.release();
     }
 
-    client.release();
     console.log("Postgres connected and verified");
     isPgConnected = true;
     return true;

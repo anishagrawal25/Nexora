@@ -31,7 +31,7 @@ function AuthLayout({ children }) {
 
       {/* Subtle Footer */}
       <footer className="py-6 px-6 border-t border-[#E4E1D8] text-center text-xs text-[#5B6670] font-mono">
-        Nexora Career Readiness Platform • Secure Evaluation
+        Nexora Career Readiness
       </footer>
     </div>
   );

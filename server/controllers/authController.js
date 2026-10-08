@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { pgPool } = require("../config/postgres");
 const { AppError, asyncHandler } = require("../middleware/errorHandler");
+const { getJwtSecret } = require("../config/security");
 
 const SALT_ROUNDS = 10;
 const register = asyncHandler(async (req, res) => {
@@ -30,8 +31,7 @@ const register = asyncHandler(async (req, res) => {
 
   const user = result.rows[0];
 
-  const jwtSecret = process.env.JWT_SECRET || "nexora_default_jwt_secret_key_2026";
-  const token = jwt.sign({ id: user.id, email: user.email }, jwtSecret, {
+  const token = jwt.sign({ id: user.id, email: user.email }, getJwtSecret(), {
     expiresIn: "7d",
   });
 
@@ -59,8 +59,7 @@ const login = asyncHandler(async (req, res) => {
     throw new AppError("Invalid email or password", 401);
   }
 
-  const jwtSecret = process.env.JWT_SECRET || "nexora_default_jwt_secret_key_2026";
-  const token = jwt.sign({ id: user.id, email: user.email }, jwtSecret, {
+  const token = jwt.sign({ id: user.id, email: user.email }, getJwtSecret(), {
     expiresIn: "7d",
   });
 
