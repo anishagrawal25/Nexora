@@ -44,14 +44,32 @@ const analyzeResume = asyncHandler(async (req, res) => {
   }
 
   // Fetch the actual PDF file from its Cloudinary URL
-  const response = await fetch(resumeDoc.resumeUrl);
+  let response;
+  try {
+    response = await fetch(resumeDoc.resumeUrl);
+  } catch (err) {
+    throw new AppError("Could not retrieve the uploaded PDF. Please upload it again.", 502);
+  }
+  if (!response.ok) {
+    throw new AppError("Could not retrieve the uploaded PDF. Please upload it again.", 502);
+  }
+
   const arrayBuffer = await response.arrayBuffer();
   const pdfBuffer = Buffer.from(arrayBuffer);
 
   // Extract plain text from the PDF
-  const parser = new PDFParse({ data: pdfBuffer });
-  const result = await parser.getText();
-  const resumeText = result.text;
+  let resumeText;
+  try {
+    const parser = new PDFParse({ data: pdfBuffer });
+    const result = await parser.getText();
+    resumeText = String(result.text || "").trim();
+  } catch (err) {
+    console.error("[Resume PDF extraction failed]", err);
+    throw new AppError("We could not read this PDF. Try a text-based PDF instead of a scanned image.", 422);
+  }
+  if (!resumeText) {
+    throw new AppError("We could not read text from this PDF. Try a text-based PDF instead of a scanned image.", 422);
+  }
 
   // Build the prompt
   const prompt = `You are a career advisor analyzing a resume for a student preparing for internships or entry-level jobs.
@@ -79,13 +97,18 @@ ${resumeText}
     responseText = aiResult.response.text();
   } catch (err) {
     const message = String(err?.message || "");
+    console.error("[Gemini resume analysis failed]", err);
     const isTemporary503 = message.includes("503") || message.includes("high demand");
 
     if (isTemporary503) {
       throw new AppError("AI service is busy right now. Please retry in a few seconds.", 503);
     }
 
-    throw new AppError("AI analysis failed. Please try again.", 502);
+    if (/api.?key|unauthorized|permission|\b401\b|\b403\b/i.test(message)) {
+      throw new AppError("AI service credentials need attention. Please try again later.", 503);
+    }
+
+    throw new AppError("AI service could not complete the analysis. Please try again later.", 502);
   }
 
   // Parse the JSON response

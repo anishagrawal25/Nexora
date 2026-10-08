@@ -2,15 +2,11 @@ import { useState, useRef } from 'react';
 import {
   Upload,
   FileText,
-  CheckCircle2,
   AlertCircle,
   Loader2,
   X,
   ArrowRight,
-  ShieldCheck,
   Sparkles,
-  Layers,
-  FileCheck,
 } from 'lucide-react';
 import { uploadResume, apiRequest } from '../api';
 
@@ -65,9 +61,15 @@ function ResumeUpload({ onAnalysisComplete }) {
     setUploading(true);
 
     try {
-      const uploadData = await uploadResume(file);
-      setUploading(false);
+      let uploadData;
+      try {
+        uploadData = await uploadResume(file);
+      } catch (err) {
+        setError(`Resume upload failed: ${err.message || 'Please try again.'}`);
+        return;
+      }
 
+      setUploading(false);
       setAnalyzing(true);
       const analysisData = await apiRequest('/resume/analyze', {
         method: 'POST',
@@ -76,7 +78,7 @@ function ResumeUpload({ onAnalysisComplete }) {
 
       onAnalysisComplete(analysisData.analysis);
     } catch (err) {
-      setError(err.message || 'Failed to analyze resume.');
+      setError(err.message || 'AI service could not complete the analysis. Please try again later.');
     } finally {
       setUploading(false);
       setAnalyzing(false);
