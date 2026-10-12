@@ -87,6 +87,7 @@ function createSeedClient() {
         return { rows: [] };
       }
       if (query.startsWith("CREATE UNIQUE INDEX")) return { rows: [] };
+      if (query.startsWith("SELECT setval")) return { rows: [] };
       throw new Error(`Unhandled test SQL: ${query}`);
     },
   };

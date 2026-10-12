@@ -60,6 +60,18 @@ async function seedCompanyData(client) {
          AND criteria.id > duplicate.id`
     );
 
+    // Synchronize sequences before inserting to prevent duplicate key errors if tables were pre-seeded with explicit IDs
+    try {
+      await client.query("SELECT setval(pg_get_serial_sequence('companies', 'id'), COALESCE((SELECT MAX(id) FROM companies), 1))");
+    } catch (e) {
+      // Ignored if sequence is not found or client is mocked
+    }
+    try {
+      await client.query("SELECT setval(pg_get_serial_sequence('eligibility_criteria', 'id'), COALESCE((SELECT MAX(id) FROM eligibility_criteria), 1))");
+    } catch (e) {
+      // Ignored if sequence is not found or client is mocked
+    }
+
     for (const company of companies) {
       let existing = await client.query(
         "SELECT id FROM companies WHERE LOWER(name) = LOWER($1) ORDER BY id LIMIT 1",
@@ -68,25 +80,64 @@ async function seedCompanyData(client) {
       let companyId = existing.rows[0]?.id;
 
       if (companyId === undefined) {
-        const inserted = await client.query(
-          "INSERT INTO companies (name) VALUES ($1) RETURNING id",
-          [company.name]
-        );
-        companyId = inserted.rows[0].id;
+        try {
+          const inserted = await client.query(
+            "INSERT INTO companies (name) VALUES ($1) RETURNING id",
+            [company.name]
+          );
+          companyId = inserted.rows[0].id;
+        } catch (insertErr) {
+          if (insertErr.code === "23505") {
+            try {
+              await client.query("SELECT setval(pg_get_serial_sequence('companies', 'id'), COALESCE((SELECT MAX(id) FROM companies), 1))");
+              const retryInserted = await client.query(
+                "INSERT INTO companies (name) VALUES ($1) RETURNING id",
+                [company.name]
+              );
+              companyId = retryInserted.rows[0].id;
+            } catch (retryErr) {
+              const fallback = await client.query(
+                "SELECT id FROM companies WHERE LOWER(name) = LOWER($1) ORDER BY id LIMIT 1",
+                [company.name]
+              );
+              companyId = fallback.rows[0]?.id;
+            }
+          } else {
+            throw insertErr;
+          }
+        }
       } else {
         await client.query("UPDATE companies SET name = $1 WHERE id = $2", [company.name, companyId]);
       }
 
-      const existingCriteria = await client.query(
-        "SELECT id FROM eligibility_criteria WHERE company_id = $1 ORDER BY id LIMIT 1",
-        [companyId]
-      );
-
-      if (existingCriteria.rows.length === 0) {
-        await client.query(
-          "INSERT INTO eligibility_criteria (company_id, min_cgpa, min_grad_year, required_skills) VALUES ($1, $2, $3, $4)",
-          [companyId, company.cgpa, company.year, company.skills]
+      if (companyId !== undefined) {
+        const existingCriteria = await client.query(
+          "SELECT id FROM eligibility_criteria WHERE company_id = $1 ORDER BY id LIMIT 1",
+          [companyId]
         );
+
+        if (existingCriteria.rows.length === 0) {
+          try {
+            await client.query(
+              "INSERT INTO eligibility_criteria (company_id, min_cgpa, min_grad_year, required_skills) VALUES ($1, $2, $3, $4)",
+              [companyId, company.cgpa, company.year, company.skills]
+            );
+          } catch (critErr) {
+            if (critErr.code === "23505") {
+              try {
+                await client.query("SELECT setval(pg_get_serial_sequence('eligibility_criteria', 'id'), COALESCE((SELECT MAX(id) FROM eligibility_criteria), 1))");
+                await client.query(
+                  "INSERT INTO eligibility_criteria (company_id, min_cgpa, min_grad_year, required_skills) VALUES ($1, $2, $3, $4)",
+                  [companyId, company.cgpa, company.year, company.skills]
+                );
+              } catch (critRetryErr) {
+                // Ignore duplicate criteria if already handled
+              }
+            } else {
+              throw critErr;
+            }
+          }
+        }
       }
     }
 

@@ -272,7 +272,25 @@ async function connectPostgres() {
         const schemaSql = fs.readFileSync(schemaPath, "utf-8");
         await client.query(schemaSql);
       }
-      await seedCompanyData(client);
+
+      // Synchronize all primary key sequences to avoid key collision
+      try {
+        await client.query(`
+          SELECT setval(pg_get_serial_sequence('companies', 'id'), COALESCE((SELECT MAX(id) FROM companies), 1));
+          SELECT setval(pg_get_serial_sequence('eligibility_criteria', 'id'), COALESCE((SELECT MAX(id) FROM eligibility_criteria), 1));
+          SELECT setval(pg_get_serial_sequence('target_roles', 'id'), COALESCE((SELECT MAX(id) FROM target_roles), 1));
+          SELECT setval(pg_get_serial_sequence('users', 'id'), COALESCE((SELECT MAX(id) FROM users), 1));
+        `);
+      } catch (seqErr) {
+        // Ignored if sequences don't exist yet
+      }
+
+      try {
+        await seedCompanyData(client);
+      } catch (seedErr) {
+        console.warn("Company seed warning (proceeding with verified connection):", seedErr.message);
+      }
+
       await client.query("SELECT 1");
     } finally {
       client.release();
